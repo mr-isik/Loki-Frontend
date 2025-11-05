@@ -1,7 +1,7 @@
-import * as React from 'react';
-import { AutomationNode } from '@/types/node.types';
-import * as LucideIcons from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
+import { AutomationNode } from "@/types/node.types";
+import * as LucideIcons from "lucide-react";
+import * as React from "react";
 
 /**
  * NodeItem Props Interface
@@ -26,15 +26,21 @@ export const NodeItem: React.FC<NodeItemProps> = ({
   isDragging = false,
 }) => {
   // Dynamically get the icon component
-  const IconComponent = (LucideIcons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[node.icon] || LucideIcons.Circle;
+  const IconComponent =
+    (
+      LucideIcons as unknown as Record<
+        string,
+        React.ComponentType<{ className?: string }>
+      >
+    )[node.icon] || LucideIcons.Circle;
 
   const handleClick = () => {
     onClick?.(node);
   };
 
   const handleDragStart = (e: React.DragEvent) => {
-    e.dataTransfer.setData('application/json', JSON.stringify(node));
-    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData("application/json", JSON.stringify(node));
+    e.dataTransfer.effectAllowed = "copy";
   };
 
   return (
@@ -43,11 +49,11 @@ export const NodeItem: React.FC<NodeItemProps> = ({
       onDragStart={handleDragStart}
       onClick={handleClick}
       className={cn(
-        'group flex items-center gap-3 px-3 py-2.5 rounded-lg',
-        'cursor-grab active:cursor-grabbing',
-        'hover:bg-accent transition-colors duration-200',
-        'border border-transparent hover:border-border',
-        isDragging && 'opacity-50',
+        "group flex items-center gap-3 px-3 py-2.5 rounded-lg",
+        "cursor-grab active:cursor-grabbing",
+        "hover:bg-accent transition-colors duration-200",
+        "border border-transparent hover:border-border",
+        isDragging && "opacity-50",
         className
       )}
     >
@@ -71,4 +77,4 @@ export const NodeItem: React.FC<NodeItemProps> = ({
   );
 };
 
-NodeItem.displayName = 'NodeItem';
+NodeItem.displayName = "NodeItem";

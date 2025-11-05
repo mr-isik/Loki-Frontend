@@ -4,9 +4,9 @@
  */
 
 export enum NodeType {
-  API_CALL = 'api_call',
-  SHELL_COMMAND = 'shell_command',
-  DISCORD_MESSAGE = 'discord_message',
+  API_CALL = "api_call",
+  SHELL_COMMAND = "shell_command",
+  DISCORD_MESSAGE = "discord_message",
 }
 
 export interface BaseNode {
@@ -20,14 +20,14 @@ export interface BaseNode {
 
 export interface ApiCallNode extends BaseNode {
   type: NodeType.API_CALL;
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   endpoint: string;
 }
 
 export interface ShellCommandNode extends BaseNode {
   type: NodeType.SHELL_COMMAND;
   command: string;
-  shell: 'bash' | 'powershell' | 'cmd';
+  shell: "bash" | "powershell" | "cmd";
 }
 
 export interface DiscordMessageNode extends BaseNode {
@@ -36,7 +36,10 @@ export interface DiscordMessageNode extends BaseNode {
   channelId?: string;
 }
 
-export type AutomationNode = ApiCallNode | ShellCommandNode | DiscordMessageNode;
+export type AutomationNode =
+  | ApiCallNode
+  | ShellCommandNode
+  | DiscordMessageNode;
 
 /**
  * Type guard functions for type safety
@@ -46,10 +49,14 @@ export const isApiCallNode = (node: AutomationNode): node is ApiCallNode => {
   return node.type === NodeType.API_CALL;
 };
 
-export const isShellCommandNode = (node: AutomationNode): node is ShellCommandNode => {
+export const isShellCommandNode = (
+  node: AutomationNode
+): node is ShellCommandNode => {
   return node.type === NodeType.SHELL_COMMAND;
 };
 
-export const isDiscordMessageNode = (node: AutomationNode): node is DiscordMessageNode => {
+export const isDiscordMessageNode = (
+  node: AutomationNode
+): node is DiscordMessageNode => {
   return node.type === NodeType.DISCORD_MESSAGE;
 };
