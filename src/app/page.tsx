@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 const page = () => {
   return (
-    <div className="flex gap-4">
+    <div className="flex gap-4 p-16">
       <Button>Primary Button</Button>
       <Button variant="secondary">Secondary Button</Button>
       <Button variant="destructive">Destructive Button</Button>
