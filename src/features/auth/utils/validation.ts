@@ -1,8 +1,14 @@
-import {z} from "zod";
+import { z } from "zod";
 
 export const loginSchema = z.object({
-  email: z.string().min(1, "E-posta adresi gereklidir").email("Geçerli bir e-posta adresi giriniz"),
-  password: z.string().min(1, "Şifre gereklidir").min(8, "Şifre en az 8 karakter olmalıdır"),
+  email: z
+    .string()
+    .min(1, "E-posta adresi gereklidir")
+    .email("Geçerli bir e-posta adresi giriniz"),
+  password: z
+    .string()
+    .min(1, "Şifre gereklidir")
+    .min(8, "Şifre en az 8 karakter olmalıdır"),
   rememberMe: z.boolean().optional(),
 });
 
@@ -37,7 +43,7 @@ export const signupSchema = z
       .min(8, "Şifre en az 8 karakter olmalıdır")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Şifre en az bir küçük harf, bir büyük harf ve bir rakam içermelidir",
+        "Şifre en az bir küçük harf, bir büyük harf ve bir rakam içermelidir"
       ),
     confirmPassword: z.string().min(1, "Şifre onayı gereklidir"),
     agreeToTerms: z
@@ -50,7 +56,10 @@ export const signupSchema = z
   });
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().min(1, "E-posta adresi gereklidir").email("Geçerli bir e-posta adresi giriniz"),
+  email: z
+    .string()
+    .min(1, "E-posta adresi gereklidir")
+    .email("Geçerli bir e-posta adresi giriniz"),
 });
 
 export const resetPasswordSchema = z
@@ -60,7 +69,7 @@ export const resetPasswordSchema = z
       .min(8, "Şifre en az 8 karakter olmalıdır")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Şifre en az bir küçük harf, bir büyük harf ve bir rakam içermelidir",
+        "Şifre en az bir küçük harf, bir büyük harf ve bir rakam içermelidir"
       ),
     confirmPassword: z.string().min(1, "Şifre onayı gereklidir"),
   })
@@ -69,16 +78,7 @@ export const resetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
-export const verifyEmailSchema = z.object({
-  code: z
-    .string()
-    .min(6, "Doğrulama kodu 6 karakter olmalıdır")
-    .max(6, "Doğrulama kodu 6 karakter olmalıdır")
-    .regex(/^\d+$/, "Doğrulama kodu sadece rakam içermelidir"),
-});
-
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type SignupFormData = z.infer<typeof signupSchema>;
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
-export type VerifyEmailFormData = z.infer<typeof verifyEmailSchema>;
