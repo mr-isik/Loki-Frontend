@@ -4,15 +4,15 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosResponse,
 } from "axios";
-import {z} from "zod";
+import { z } from "zod";
 
-import {clearAuthTokens} from "@/features/auth";
-import {AuthAPI} from "@/features/auth/api";
+import { clearAuthTokens } from "@/features/auth";
+import { AuthAPI } from "@/features/auth/api";
 
-import {logger} from "./logger";
-import {ApiConfig, ApiError, ApiRequestConfig} from "./types";
-import {createApiError, getCookie} from "./utils";
-import {validateApiResponse, ValidationError} from "./validation";
+import { logger } from "./logger";
+import { ApiConfig, ApiError, ApiRequestConfig } from "./types";
+import { createApiError, getCookie } from "./utils";
+import { validateApiResponse, ValidationError } from "./validation";
 
 export interface ApiResponse<T = any> {
   data: T | null;
@@ -62,7 +62,7 @@ axiosInstance.interceptors.request.use(
     logger.error("Request interceptor error", error);
 
     return Promise.reject(createApiError(error, "REQUEST_INTERCEPTOR_ERROR"));
-  },
+  }
 );
 
 // Token refresh state
@@ -98,7 +98,9 @@ axiosInstance.interceptors.response.use(
   },
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
-    const duration = originalRequest?.startTime ? Date.now() - originalRequest.startTime : 0;
+    const duration = originalRequest?.startTime
+      ? Date.now() - originalRequest.startTime
+      : 0;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (originalRequest.url?.includes("/auth/refresh")) {
@@ -117,8 +119,8 @@ axiosInstance.interceptors.response.use(
       if (!isRefreshing) {
         isRefreshing = true;
 
-        const {data, error: refreshError} = await AuthAPI.refreshToken(
-          getCookie("refreshToken") || "",
+        const { data, error: refreshError } = await AuthAPI.refreshToken(
+          getCookie("refreshToken") || ""
         );
 
         if (data?.access_token) {
@@ -143,12 +145,16 @@ axiosInstance.interceptors.response.use(
         logger.error("Token refresh failed", refreshError);
 
         if (typeof window !== "undefined") {
-          document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-          document.cookie = "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+          document.cookie =
+            "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+          document.cookie =
+            "refreshToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
           window.location.href = "/login";
         }
 
-        return Promise.reject(createApiError(refreshError, "TOKEN_REFRESH_ERROR"));
+        return Promise.reject(
+          createApiError(refreshError, "TOKEN_REFRESH_ERROR")
+        );
       }
 
       return new Promise((resolve) => {
@@ -179,7 +185,7 @@ axiosInstance.interceptors.response.use(
     logger.error("API Error", apiError);
 
     return Promise.reject(apiError);
-  },
+  }
 );
 
 class ApiClient {
@@ -192,7 +198,7 @@ class ApiClient {
   }
 
   async request<TResponse = any, TRequest = any>(
-    requestConfig: ApiRequestConfig<TRequest, TResponse>,
+    requestConfig: ApiRequestConfig<TRequest, TResponse>
   ): Promise<ApiResponse<TResponse>> {
     const {
       url,
@@ -208,18 +214,27 @@ class ApiClient {
     } = requestConfig;
 
     // Request validation
-    if (this.config.enableValidation && !skipValidation && validationSchema && data) {
+    if (
+      this.config.enableValidation &&
+      !skipValidation &&
+      validationSchema &&
+      data
+    ) {
       const validation = validationSchema.safeParse(data);
 
       if (!validation.success) {
         const errors = validation.error.issues.map(
-          (err: any) => `${err.path.join(".")}: ${err.message}`,
+          (err: any) => `${err.path.join(".")}: ${err.message}`
         );
 
-        const validationError = new ValidationError("Request validation failed", errors, {
-          url,
-          method,
-        });
+        const validationError = new ValidationError(
+          "Request validation failed",
+          errors,
+          {
+            url,
+            method,
+          }
+        );
 
         return {
           data: null,
@@ -236,8 +251,8 @@ class ApiClient {
         data,
         params,
         headers,
-        ...(timeout && {timeout}),
-        ...(responseType && {responseType}),
+        ...(timeout && { timeout }),
+        ...(responseType && { responseType }),
       };
 
       const response = await this.instance.request(axiosConfig);
@@ -256,7 +271,7 @@ class ApiClient {
               url,
               method,
               response: response.data,
-            },
+            }
           );
 
           return {
@@ -296,9 +311,14 @@ class ApiClient {
   async get<TSchema extends z.ZodTypeAny>(
     url: string,
     params?: object,
-    responseSchema?: TSchema,
-  ): Promise<ApiResponse<TSchema extends z.ZodTypeAny ? z.infer<TSchema> : any>> {
-    return this.request<TSchema extends z.ZodTypeAny ? z.infer<TSchema> : any, any>({
+    responseSchema?: TSchema
+  ): Promise<
+    ApiResponse<TSchema extends z.ZodTypeAny ? z.infer<TSchema> : any>
+  > {
+    return this.request<
+      TSchema extends z.ZodTypeAny ? z.infer<TSchema> : any,
+      any
+    >({
       url,
       method: "GET",
       params,
@@ -306,68 +326,97 @@ class ApiClient {
     });
   }
 
-  async post<TRequestSchema extends z.ZodTypeAny, TResponseSchema extends z.ZodTypeAny>(
+  async post<
+    TRequestSchema extends z.ZodTypeAny,
+    TResponseSchema extends z.ZodTypeAny
+  >(
     url: string,
     data?: TRequestSchema extends z.ZodTypeAny ? z.infer<TRequestSchema> : any,
     schemas?: {
       request?: TRequestSchema;
       response?: TResponseSchema;
-    },
-  ): Promise<ApiResponse<TResponseSchema extends z.ZodTypeAny ? z.infer<TResponseSchema> : any>> {
-    return this.request<TResponseSchema extends z.ZodTypeAny ? z.infer<TResponseSchema> : any, any>(
-      {
-        url,
-        method: "POST",
-        data,
-        validationSchema: schemas?.request as any,
-        responseSchema: schemas?.response as any,
-      },
-    );
+    }
+  ): Promise<
+    ApiResponse<
+      TResponseSchema extends z.ZodTypeAny ? z.infer<TResponseSchema> : any
+    >
+  > {
+    return this.request<
+      TResponseSchema extends z.ZodTypeAny ? z.infer<TResponseSchema> : any,
+      any
+    >({
+      url,
+      method: "POST",
+      data,
+      validationSchema: schemas?.request as any,
+      responseSchema: schemas?.response as any,
+    });
   }
 
-  async put<TRequestSchema extends z.ZodTypeAny, TResponseSchema extends z.ZodTypeAny>(
+  async put<
+    TRequestSchema extends z.ZodTypeAny,
+    TResponseSchema extends z.ZodTypeAny
+  >(
     url: string,
     data?: TRequestSchema extends z.ZodTypeAny ? z.infer<TRequestSchema> : any,
     schemas?: {
       request?: TRequestSchema;
       response?: TResponseSchema;
-    },
-  ): Promise<ApiResponse<TResponseSchema extends z.ZodTypeAny ? z.infer<TResponseSchema> : any>> {
-    return this.request<TResponseSchema extends z.ZodTypeAny ? z.infer<TResponseSchema> : any, any>(
-      {
-        url,
-        method: "PUT",
-        data,
-        validationSchema: schemas?.request as any,
-        responseSchema: schemas?.response as any,
-      },
-    );
+    }
+  ): Promise<
+    ApiResponse<
+      TResponseSchema extends z.ZodTypeAny ? z.infer<TResponseSchema> : any
+    >
+  > {
+    return this.request<
+      TResponseSchema extends z.ZodTypeAny ? z.infer<TResponseSchema> : any,
+      any
+    >({
+      url,
+      method: "PUT",
+      data,
+      validationSchema: schemas?.request as any,
+      responseSchema: schemas?.response as any,
+    });
   }
 
-  async patch<TRequestSchema extends z.ZodTypeAny, TResponseSchema extends z.ZodTypeAny>(
+  async patch<
+    TRequestSchema extends z.ZodTypeAny,
+    TResponseSchema extends z.ZodTypeAny
+  >(
     url: string,
     data?: TRequestSchema extends z.ZodTypeAny ? z.infer<TRequestSchema> : any,
     schemas?: {
       request?: TRequestSchema;
       response?: TResponseSchema;
-    },
-  ): Promise<ApiResponse<TResponseSchema extends z.ZodTypeAny ? z.infer<TResponseSchema> : any>> {
-    return this.request<TResponseSchema extends z.ZodTypeAny ? z.infer<TResponseSchema> : any, any>(
-      {
-        url,
-        method: "PATCH",
-        data,
-        validationSchema: schemas?.request as any,
-        responseSchema: schemas?.response as any,
-      },
-    );
+    }
+  ): Promise<
+    ApiResponse<
+      TResponseSchema extends z.ZodTypeAny ? z.infer<TResponseSchema> : any
+    >
+  > {
+    return this.request<
+      TResponseSchema extends z.ZodTypeAny ? z.infer<TResponseSchema> : any,
+      any
+    >({
+      url,
+      method: "PATCH",
+      data,
+      validationSchema: schemas?.request as any,
+      responseSchema: schemas?.response as any,
+    });
   }
 
   async delete<TSchema extends z.ZodTypeAny>(
     url: string,
-    responseSchema?: TSchema,
-  ): Promise<ApiResponse<TSchema extends z.ZodTypeAny ? z.infer<TSchema> : any>> {
-    return this.request<TSchema extends z.ZodTypeAny ? z.infer<TSchema> : any, any>({
+    responseSchema?: TSchema
+  ): Promise<
+    ApiResponse<TSchema extends z.ZodTypeAny ? z.infer<TSchema> : any>
+  > {
+    return this.request<
+      TSchema extends z.ZodTypeAny ? z.infer<TSchema> : any,
+      any
+    >({
       url,
       method: "DELETE",
       responseSchema: responseSchema as any,
