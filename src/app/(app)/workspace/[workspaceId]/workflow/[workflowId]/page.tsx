@@ -8,6 +8,7 @@
 import { AppHeader } from "@/components/shared/AppHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import WorkflowEditor from "@/features/workflow/components/WorkflowEditor";
+import { WorkflowSettings } from "@/features/workflow/components/WorkflowSettings";
 import { useLastWorkflow } from "@/features/workflow/hooks/useLastWorkflow";
 import {
   useArchiveWorkflow,
@@ -17,7 +18,7 @@ import {
 } from "@/features/workflow/hooks/useQueries";
 import { WorkflowStatus } from "@/types/workflow.types";
 import { useParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function WorkflowPage() {
@@ -29,6 +30,7 @@ export default function WorkflowPage() {
   const { mutate: updateWorkflow } = useUpdateWorkflow();
   const { mutate: publishWorkflow } = usePublishWorkflow();
   const { mutate: archiveWorkflow } = useArchiveWorkflow();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Save as last workflow when viewing
   useEffect(() => {
@@ -82,8 +84,7 @@ export default function WorkflowPage() {
   };
 
   const handleSettings = () => {
-    // TODO: Implement workflow settings
-    toast.info("Workflow settings - Coming soon");
+    setSettingsOpen(true);
   };
 
   if (isLoading) {
@@ -136,6 +137,13 @@ export default function WorkflowPage() {
         onSettings={handleSettings}
       />
       <WorkflowEditor />
+      <WorkflowSettings
+        workflowId={workflowId}
+        workspaceId={workspaceId}
+        workflowName={workflow.title}
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+      />
     </>
   );
 }
