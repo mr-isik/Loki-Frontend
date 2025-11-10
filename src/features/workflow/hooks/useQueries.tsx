@@ -141,3 +141,57 @@ export const useDeleteWorkflow = () => {
     },
   });
 };
+
+/**
+ * Publish workflow
+ */
+export const usePublishWorkflow = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (workflowId: string) => {
+      const { success, error } = await workflowAPI.PublishWorkflow(workflowId);
+      if (!success) {
+        throw new Error(error?.message || "Failed to publish workflow");
+      }
+      return workflowId;
+    },
+    onSuccess: (workflowId) => {
+      // Invalidate workflow detail to get updated status
+      queryClient.invalidateQueries({
+        queryKey: workflowKeys.detail(workflowId),
+      });
+      // Also invalidate lists
+      queryClient.invalidateQueries({
+        queryKey: ["workflows"],
+      });
+    },
+  });
+};
+
+/**
+ * Archive workflow
+ */
+export const useArchiveWorkflow = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (workflowId: string) => {
+      const { success, error } = await workflowAPI.ArchiveWorkflow(workflowId);
+      if (!success) {
+        throw new Error(error?.message || "Failed to archive workflow");
+      }
+      return workflowId;
+    },
+    onSuccess: (workflowId) => {
+      // Invalidate workflow detail to get updated status
+      queryClient.invalidateQueries({
+        queryKey: workflowKeys.detail(workflowId),
+      });
+      // Also invalidate lists
+      queryClient.invalidateQueries({
+        queryKey: ["workflows"],
+      });
+    },
+  });
+};

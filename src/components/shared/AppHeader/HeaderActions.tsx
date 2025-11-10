@@ -11,7 +11,7 @@ import {
   canPublishWorkflow,
   canRunWorkflow,
 } from "@/types/workflow.types";
-import { Play, Settings, Upload } from "lucide-react";
+import { Archive, Play, Settings, Upload } from "lucide-react";
 import * as React from "react";
 
 /**
@@ -22,9 +22,11 @@ interface HeaderActionsProps {
   workflow: Workflow;
   onRun: () => void;
   onPublish: () => void;
+  onArchive?: () => void;
   onSettings: () => void;
   isRunning?: boolean;
   isPublishing?: boolean;
+  isArchiving?: boolean;
   className?: string;
 }
 
@@ -37,9 +39,11 @@ export const HeaderActions: React.FC<HeaderActionsProps> = ({
   workflow,
   onRun,
   onPublish,
+  onArchive,
   onSettings,
   isRunning = false,
   isPublishing = false,
+  isArchiving = false,
   className,
 }) => {
   const canRun = canRunWorkflow(workflow);
@@ -94,7 +98,7 @@ export const HeaderActions: React.FC<HeaderActionsProps> = ({
                   </>
                 ) : (
                   <>
-                    <Upload />
+                    <Upload className="h-4 w-4" />
                     Publish
                   </>
                 )}
@@ -108,6 +112,35 @@ export const HeaderActions: React.FC<HeaderActionsProps> = ({
               </p>
             </TooltipContent>
           </Tooltip>
+
+          {/* Archive Button */}
+          {onArchive && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={onArchive}
+                  disabled={isArchiving}
+                  variant="outline"
+                  size="sm"
+                >
+                  {isArchiving ? (
+                    <>
+                      <Spinner />
+                      Archiving
+                    </>
+                  ) : (
+                    <>
+                      <Archive className="h-4 w-4" />
+                      Archive
+                    </>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Archive the workflow</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
 
           {/* Settings Button */}
           <Tooltip>

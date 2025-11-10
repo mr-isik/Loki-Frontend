@@ -5,12 +5,20 @@
 
 "use client";
 
+import { AppHeader } from "@/components/shared/AppHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import WorkflowEditor from "@/features/workflow/components/WorkflowEditor";
 import { useLastWorkflow } from "@/features/workflow/hooks/useLastWorkflow";
-import { useWorkflow } from "@/features/workflow/hooks/useQueries";
+import {
+  useArchiveWorkflow,
+  usePublishWorkflow,
+  useUpdateWorkflow,
+  useWorkflow,
+} from "@/features/workflow/hooks/useQueries";
+import { WorkflowStatus } from "@/types/workflow.types";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 export default function WorkflowPage() {
   const params = useParams();
@@ -18,6 +26,9 @@ export default function WorkflowPage() {
   const workflowId = params.workflowId as string;
   const { data: workflow, isLoading } = useWorkflow(workflowId);
   const { saveLastWorkflow } = useLastWorkflow(workspaceId);
+  const { mutate: updateWorkflow } = useUpdateWorkflow();
+  const { mutate: publishWorkflow } = usePublishWorkflow();
+  const { mutate: archiveWorkflow } = useArchiveWorkflow();
 
   // Save as last workflow when viewing
   useEffect(() => {
@@ -25,6 +36,55 @@ export default function WorkflowPage() {
       saveLastWorkflow(workflowId);
     }
   }, [workflowId, saveLastWorkflow]);
+
+  const handleNameChange = (name: string) => {
+    updateWorkflow(
+      {
+        workflowId,
+        updates: { title: name },
+      },
+      {
+        onSuccess: () => {
+          toast.success("Workflow name updated");
+        },
+        onError: (error) => {
+          toast.error(error.message || "Failed to update workflow name");
+        },
+      }
+    );
+  };
+
+  const handlePublish = () => {
+    publishWorkflow(workflowId, {
+      onSuccess: () => {
+        toast.success("Workflow published successfully");
+      },
+      onError: (error) => {
+        toast.error(error.message || "Failed to publish workflow");
+      },
+    });
+  };
+
+  const handleArchive = () => {
+    archiveWorkflow(workflowId, {
+      onSuccess: () => {
+        toast.success("Workflow archived");
+      },
+      onError: (error) => {
+        toast.error(error.message || "Failed to archive workflow");
+      },
+    });
+  };
+
+  const handleRun = () => {
+    // TODO: Implement run workflow
+    toast.info("Run workflow - Coming soon");
+  };
+
+  const handleSettings = () => {
+    // TODO: Implement workflow settings
+    toast.info("Workflow settings - Coming soon");
+  };
 
   if (isLoading) {
     return (
@@ -47,5 +107,35 @@ export default function WorkflowPage() {
     );
   }
 
-  return <WorkflowEditor />;
+  // Map API status to WorkflowStatus enum
+  const mapStatus = (status: string): WorkflowStatus => {
+    const statusMap: Record<string, WorkflowStatus> = {
+      draft: WorkflowStatus.DRAFT,
+      running: WorkflowStatus.RUNNING,
+      published: WorkflowStatus.PUBLISHED,
+      paused: WorkflowStatus.PAUSED,
+      failed: WorkflowStatus.FAILED,
+    };
+    return statusMap[status.toLowerCase()] || WorkflowStatus.DRAFT;
+  };
+
+  return (
+    <>
+      <AppHeader
+        workflow={{
+          id: workflow.id,
+          name: workflow.title,
+          status: mapStatus(workflow.status),
+          createdAt: new Date(workflow.created_at),
+          updatedAt: new Date(workflow.updated_at),
+        }}
+        onWorkflowNameChange={handleNameChange}
+        onRun={handleRun}
+        onPublish={handlePublish}
+        onArchive={handleArchive}
+        onSettings={handleSettings}
+      />
+      <WorkflowEditor />
+    </>
+  );
 }

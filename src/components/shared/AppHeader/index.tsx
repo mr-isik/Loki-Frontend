@@ -17,6 +17,7 @@ interface AppHeaderProps {
   onWorkflowNameChange?: (name: string) => void;
   onRun?: () => void;
   onPublish?: () => void;
+  onArchive?: () => void;
   onSettings?: () => void;
   className?: string;
 }
@@ -29,11 +30,13 @@ export function AppHeader({
   onWorkflowNameChange,
   onRun,
   onPublish,
+  onArchive,
   onSettings,
   className,
 }: AppHeaderProps) {
   const [isRunning, setIsRunning] = React.useState(false);
   const [isPublishing, setIsPublishing] = React.useState(false);
+  const [isArchiving, setIsArchiving] = React.useState(false);
 
   // Default workflow if none provided
   const defaultWorkflow: Workflow = React.useMemo(
@@ -81,6 +84,18 @@ export function AppHeader({
     }
   }, [onPublish]);
 
+  const handleArchive = React.useCallback(async () => {
+    setIsArchiving(true);
+    try {
+      await onArchive?.();
+      console.log("Workflow archived");
+    } catch (error) {
+      console.error("Failed to archive workflow:", error);
+    } finally {
+      setTimeout(() => setIsArchiving(false), 1500);
+    }
+  }, [onArchive]);
+
   // Handle settings
   const handleSettings = React.useCallback(() => {
     onSettings?.();
@@ -112,9 +127,11 @@ export function AppHeader({
         workflow={currentWorkflow}
         onRun={handleRun}
         onPublish={handlePublish}
+        onArchive={onArchive ? handleArchive : undefined}
         onSettings={handleSettings}
         isRunning={isRunning}
         isPublishing={isPublishing}
+        isArchiving={isArchiving}
       />
     </header>
   );

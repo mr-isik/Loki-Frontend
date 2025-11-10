@@ -52,4 +52,18 @@ export const workflowAPI = {
     );
     return { error, success };
   },
+
+  async PublishWorkflow(workflowId: string) {
+    const { error, success } = await apiClient.post(
+      `/workflows/${workflowId}/publish`
+    );
+    return { error, success };
+  },
+
+  async ArchiveWorkflow(workflowId: string) {
+    const { error, success } = await apiClient.post(
+      `/workflows/${workflowId}/archive`
+    );
+    return { error, success };
+  },
 };

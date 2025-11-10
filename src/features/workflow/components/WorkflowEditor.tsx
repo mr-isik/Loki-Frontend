@@ -74,7 +74,7 @@ const WorkflowEditor = () => {
   );
 
   return (
-    <div className="w-full h-screen">
+    <div className="w-full h-screen -mt-16">
       <ReactFlow
         nodes={nodes}
         edges={edges}
