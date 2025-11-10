@@ -18,88 +18,145 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Check, ChevronDown, Plus } from "lucide-react";
+import { useState } from "react";
+import { useWorkspaces } from "../../hooks/useQueries";
 import { useWorkspace } from "../../hooks/useWorkspace";
+import { CreateWorkspaceModal } from "../CreateWorkspaceModal";
+
+const WORKSPACE_COLORS = [
+  "#6B7280",
+  "#EF4444",
+  "#F59E0B",
+  "#10B981",
+  "#3B82F6",
+  "#8B5CF6",
+  "#EC4899",
+];
+
+const getWorkspaceColor = (index: number) => {
+  return WORKSPACE_COLORS[index % WORKSPACE_COLORS.length];
+};
 
 export const WorkspaceSwitcher = () => {
-  const { workspaces, currentWorkspace, setCurrentWorkspace } = useWorkspace();
+  const { currentWorkspace, setCurrentWorkspace } = useWorkspace();
+  const { data: workspaces, isLoading } = useWorkspaces();
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  if (isLoading) {
+    return (
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton size="lg" className="w-full" disabled>
+            <div className="flex items-center gap-3 flex-1">
+              <Skeleton className="h-8 w-8 rounded-lg" />
+              <div className="flex flex-col gap-1 flex-1">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+            </div>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    );
+  }
 
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="w-full data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <div className="flex items-center gap-3 flex-1">
-                <div
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-white font-semibold text-sm shrink-0"
-                  style={{
-                    backgroundColor: currentWorkspace?.color || "#6B7280",
-                  }}
-                >
-                  {currentWorkspace?.name.charAt(0).toUpperCase() || "W"}
-                </div>
-                <div className="flex flex-col items-start flex-1 min-w-0">
-                  <span className="text-sm font-semibold truncate w-full">
-                    {currentWorkspace?.name || "Select Workspace"}
-                  </span>
-                  {currentWorkspace?.description && (
-                    <span className="text-xs text-muted-foreground truncate w-full">
-                      {currentWorkspace.description}
-                    </span>
-                  )}
-                </div>
-                <ChevronDown className="h-4 w-4 shrink-0 ml-auto" />
-              </div>
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-64"
-            align="start"
-            side="bottom"
-          >
-            <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Workspaces
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {workspaces.map((workspace) => (
-              <DropdownMenuItem
-                key={workspace.id}
-                onClick={() => setCurrentWorkspace(workspace)}
-                className="gap-3 cursor-pointer"
+    <>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuButton
+                size="lg"
+                className="w-full data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
-                <div
-                  className="flex h-6 w-6 items-center justify-center rounded text-white font-semibold text-xs shrink-0"
-                  style={{ backgroundColor: workspace.color }}
-                >
-                  {workspace.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex flex-col flex-1 min-w-0">
-                  <span className="text-sm font-medium truncate">
-                    {workspace.name}
-                  </span>
-                  {workspace.description && (
-                    <span className="text-xs text-muted-foreground truncate">
-                      {workspace.description}
+                <div className="flex items-center gap-3 flex-1">
+                  <div
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-white font-semibold text-sm shrink-0"
+                    style={{
+                      backgroundColor:
+                        getWorkspaceColor(
+                          workspaces?.findIndex(
+                            (w) => w.id === currentWorkspace?.id
+                          ) ?? 0
+                        ) || "#6B7280",
+                    }}
+                  >
+                    {currentWorkspace?.name.charAt(0).toUpperCase() || "W"}
+                  </div>
+                  <div className="flex flex-col items-start flex-1 min-w-0">
+                    <span className="text-sm font-semibold truncate w-full">
+                      {currentWorkspace?.name || "Select Workspace"}
                     </span>
-                  )}
+                    <span className="text-xs text-muted-foreground truncate w-full">
+                      {workspaces?.length || 0} workspace
+                      {workspaces?.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 shrink-0 ml-auto" />
                 </div>
-                {currentWorkspace?.id === workspace.id && (
-                  <Check className="h-4 w-4 shrink-0" />
-                )}
+              </SidebarMenuButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-[--radix-dropdown-menu-trigger-width] min-w-64"
+              align="start"
+              side="bottom"
+            >
+              <DropdownMenuLabel className="text-xs text-muted-foreground">
+                Workspaces
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {workspaces && workspaces.length > 0 ? (
+                workspaces.map((workspace, index) => (
+                  <DropdownMenuItem
+                    key={workspace.id}
+                    onClick={() => setCurrentWorkspace(workspace)}
+                    className="gap-3 cursor-pointer"
+                  >
+                    <div
+                      className="flex h-6 w-6 items-center justify-center rounded text-white font-semibold text-xs shrink-0"
+                      style={{ backgroundColor: getWorkspaceColor(index) }}
+                    >
+                      {workspace.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <span className="text-sm font-medium truncate">
+                        {workspace.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground truncate">
+                        Created{" "}
+                        {new Date(workspace.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {currentWorkspace?.id === workspace.id && (
+                      <Check className="h-4 w-4 shrink-0" />
+                    )}
+                  </DropdownMenuItem>
+                ))
+              ) : (
+                <div className="px-2 py-6 text-center text-sm text-muted-foreground">
+                  No workspaces found
+                </div>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="gap-3 cursor-pointer text-muted-foreground"
+                onClick={() => setIsCreateModalOpen(true)}
+              >
+                <Plus className="h-4 w-4" />
+                <span>Create Workspace</span>
               </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-3 cursor-pointer text-muted-foreground">
-              <Plus className="h-4 w-4" />
-              <span>Create Workspace</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarMenuItem>
+      </SidebarMenu>
+
+      <CreateWorkspaceModal
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+      />
+    </>
   );
 };
