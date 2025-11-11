@@ -45,13 +45,8 @@ export const WorkspaceSwitcher = () => {
   const params = useParams();
   const currentWorkspaceId = params.workspaceId as string | undefined;
   const { currentWorkspace, setCurrentWorkspace } = useWorkspace();
-  const {
-    data,
-    isLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useWorkspacesInfinite(10);
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useWorkspacesInfinite(10);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Flatten all pages into a single array
