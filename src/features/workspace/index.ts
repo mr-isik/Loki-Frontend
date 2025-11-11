@@ -17,4 +17,4 @@ export { WorkspaceSwitcher } from "./components/WorkspaceSwitcher";
 
 // Data
 export { mockWorkspaces } from "./data/mockWorkspaces";
-export { navigationGroups } from "./data/navigationItems";
+export { getNavigationGroups } from "./data/navigationItems";

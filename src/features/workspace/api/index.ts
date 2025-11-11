@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/api";
-import { WorkspacesResponseSchema } from "../validation";
+import { PaginatedResponseSchema } from "@/lib/validation";
+import { WorkspaceResponseSchema } from "../validation";
 
 export const workspaceAPI = {
   async CreateWorkspace(request: { name: string }) {
@@ -8,11 +9,11 @@ export const workspaceAPI = {
     return { error, success };
   },
 
-  async GetMyWorkSpaces() {
+  async GetMyWorkSpaces(page: number = 1, pageSize: number = 100) {
     const { data, error, success } = await apiClient.get(
       `/workspaces/my`,
-      {},
-      WorkspacesResponseSchema
+      { page, page_size: pageSize },
+      PaginatedResponseSchema(WorkspaceResponseSchema)
     );
 
     return { data, error, success };

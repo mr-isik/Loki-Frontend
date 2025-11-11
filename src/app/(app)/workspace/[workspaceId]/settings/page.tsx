@@ -164,10 +164,8 @@ export default function WorkspaceSettingsPage() {
                   onClick={handleSave}
                   disabled={isUpdating || !workspace || name === workspace.name}
                 >
-                  {isUpdating && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  <Save className="mr-2 h-4 w-4" />
+                  {isUpdating && <Loader2 className=" h-4 w-4 animate-spin" />}
+                  <Save className=" h-4 w-4" />
                   Save Changes
                 </Button>
               </div>
@@ -197,7 +195,7 @@ export default function WorkspaceSettingsPage() {
                     variant="destructive"
                     onClick={() => setShowDeleteDialog(true)}
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
+                    <Trash2 className=" h-4 w-4" />
                     Delete Workspace
                   </Button>
                 </div>
@@ -225,7 +223,7 @@ export default function WorkspaceSettingsPage() {
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isDeleting && <Loader2 className=" h-4 w-4 animate-spin" />}
               Delete Workspace
             </AlertDialogAction>
           </AlertDialogFooter>

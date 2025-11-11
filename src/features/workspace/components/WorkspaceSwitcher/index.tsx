@@ -19,10 +19,10 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Check, ChevronDown, Plus } from "lucide-react";
+import { Check, ChevronDown, Loader2, Plus } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { useWorkspaces } from "../../hooks/useQueries";
+import { useWorkspacesInfinite } from "../../hooks/useQueries";
 import { useWorkspace } from "../../hooks/useWorkspace";
 import { CreateWorkspaceModal } from "../CreateWorkspaceModal";
 
@@ -45,8 +45,23 @@ export const WorkspaceSwitcher = () => {
   const params = useParams();
   const currentWorkspaceId = params.workspaceId as string | undefined;
   const { currentWorkspace, setCurrentWorkspace } = useWorkspace();
-  const { data: workspaces, isLoading } = useWorkspaces();
+  const {
+    data,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useWorkspacesInfinite(10);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // Flatten all pages into a single array
+  const workspaces = data?.pages.flatMap((page) => page.data) || [];
+
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
 
   const handleWorkspaceSwitch = (workspace: {
     id: string;
@@ -128,32 +143,53 @@ export const WorkspaceSwitcher = () => {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {workspaces && workspaces.length > 0 ? (
-                workspaces.map((workspace, index) => (
-                  <DropdownMenuItem
-                    key={workspace.id}
-                    onClick={() => handleWorkspaceSwitch(workspace)}
-                    className="gap-3 cursor-pointer"
-                  >
-                    <div
-                      className="flex h-6 w-6 items-center justify-center rounded text-white font-semibold text-xs shrink-0"
-                      style={{ backgroundColor: getWorkspaceColor(index) }}
+                <>
+                  {workspaces.map((workspace, index) => (
+                    <DropdownMenuItem
+                      key={workspace.id}
+                      onClick={() => handleWorkspaceSwitch(workspace)}
+                      className="gap-3 cursor-pointer"
                     >
-                      {workspace.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="flex flex-col flex-1 min-w-0">
-                      <span className="text-sm font-medium truncate">
-                        {workspace.name}
-                      </span>
-                      <span className="text-xs text-muted-foreground truncate">
-                        Created{" "}
-                        {new Date(workspace.created_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    {displayWorkspace?.id === workspace.id && (
-                      <Check className="h-4 w-4 shrink-0" />
-                    )}
-                  </DropdownMenuItem>
-                ))
+                      <div
+                        className="flex h-6 w-6 items-center justify-center rounded text-white font-semibold text-xs shrink-0"
+                        style={{ backgroundColor: getWorkspaceColor(index) }}
+                      >
+                        {workspace.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <span className="text-sm font-medium truncate">
+                          {workspace.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground truncate">
+                          Created{" "}
+                          {new Date(workspace.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      {displayWorkspace?.id === workspace.id && (
+                        <Check className="h-4 w-4 shrink-0" />
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                  {hasNextPage && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="gap-3 cursor-pointer justify-center text-muted-foreground"
+                        onClick={handleLoadMore}
+                        disabled={isFetchingNextPage}
+                      >
+                        {isFetchingNextPage ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : null}
+                        <span>
+                          {isFetchingNextPage
+                            ? "Loading..."
+                            : "Load More Workspaces"}
+                        </span>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </>
               ) : (
                 <div className="px-2 py-6 text-center text-sm text-muted-foreground">
                   No workspaces found

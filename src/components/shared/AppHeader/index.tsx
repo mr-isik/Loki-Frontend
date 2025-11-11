@@ -105,7 +105,7 @@ export function AppHeader({
   return (
     <header
       className={cn(
-        "absolute top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 w-full",
+        "absolute top-0 z-10 flex h-16 items-center gap-4 border-b-2 bg-background px-4 w-full",
         className
       )}
     >

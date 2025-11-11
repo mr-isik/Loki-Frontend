@@ -91,7 +91,7 @@ export default function WorkflowsPage() {
             onClick={handleCreateWorkflow}
             disabled={isPending || creatingWorkflow}
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className=" h-4 w-4" />
             Create Workflow
           </Button>
         </div>
@@ -110,7 +110,7 @@ export default function WorkflowsPage() {
                 onClick={handleCreateWorkflow}
                 disabled={isPending || creatingWorkflow}
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className=" h-4 w-4" />
                 Create Your First Workflow
               </Button>
             </div>

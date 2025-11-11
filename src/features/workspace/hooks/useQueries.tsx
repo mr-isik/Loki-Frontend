@@ -3,7 +3,12 @@
  * Following Single Responsibility Principle
  */
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { workspaceAPI } from "../api";
 
 // Query Keys
@@ -14,17 +19,74 @@ export const workspaceKeys = {
 
 /**
  * Fetch all workspaces
+ * Returns paginated response with workspaces data
+ * For simple list usage - use this for backwards compatibility
  */
-export const useWorkspaces = () => {
+export const useWorkspaces = (page: number = 1, pageSize: number = 100) => {
   return useQuery({
-    queryKey: workspaceKeys.all,
+    queryKey: [...workspaceKeys.all, page, pageSize],
     queryFn: async () => {
-      const { data, success, error } = await workspaceAPI.GetMyWorkSpaces();
+      const { data, success, error } = await workspaceAPI.GetMyWorkSpaces(
+        page,
+        pageSize
+      );
+      if (!success || !data) {
+        throw new Error(error?.message || "Failed to fetch workspaces");
+      }
+      // Extract workspaces array from paginated response
+      return data.data;
+    },
+  });
+};
+
+/**
+ * Fetch all workspaces with pagination metadata
+ * Use this when you need total count, page info, etc.
+ */
+export const useWorkspacesPaginated = (
+  page: number = 1,
+  pageSize: number = 10
+) => {
+  return useQuery({
+    queryKey: [...workspaceKeys.all, "paginated", page, pageSize],
+    queryFn: async () => {
+      const { data, success, error } = await workspaceAPI.GetMyWorkSpaces(
+        page,
+        pageSize
+      );
+      if (!success || !data) {
+        throw new Error(error?.message || "Failed to fetch workspaces");
+      }
+      // Return full paginated response
+      return data;
+    },
+  });
+};
+
+/**
+ * Fetch workspaces with infinite scroll support
+ * Use this for workspace switcher and lists with load more functionality
+ */
+export const useWorkspacesInfinite = (pageSize: number = 10) => {
+  return useInfiniteQuery({
+    queryKey: [...workspaceKeys.all, "infinite", pageSize],
+    queryFn: async ({ pageParam = 1 }) => {
+      const { data, success, error } = await workspaceAPI.GetMyWorkSpaces(
+        pageParam,
+        pageSize
+      );
       if (!success || !data) {
         throw new Error(error?.message || "Failed to fetch workspaces");
       }
       return data;
     },
+    getNextPageParam: (lastPage) => {
+      if (lastPage.page < lastPage.total_pages) {
+        return lastPage.page + 1;
+      }
+      return undefined;
+    },
+    initialPageParam: 1,
   });
 };
 

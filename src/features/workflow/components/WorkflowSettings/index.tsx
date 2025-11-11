@@ -101,7 +101,7 @@ export function WorkflowSettings({
                     size="sm"
                     onClick={() => setShowDeleteDialog(true)}
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <Trash2 className="h-4 w-4 " />
                     Delete Workflow
                   </Button>
                 </div>
@@ -129,7 +129,7 @@ export function WorkflowSettings({
               disabled={isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isPending && <Loader2 className=" h-4 w-4 animate-spin" />}
               Delete Workflow
             </AlertDialogAction>
           </AlertDialogFooter>
