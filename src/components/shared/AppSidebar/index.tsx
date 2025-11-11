@@ -13,7 +13,7 @@ export function AppSidebar() {
   return (
     <Sidebar className="!border-r-2">
       {/* Workspace Switcher */}
-      <SidebarHeader className="border-b-2 px-4 py-4">
+      <SidebarHeader className="border-b-2 px-4 py-[7px]">
         <WorkspaceSwitcher />
       </SidebarHeader>
 

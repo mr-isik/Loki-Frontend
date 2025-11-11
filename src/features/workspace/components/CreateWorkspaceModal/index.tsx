@@ -52,7 +52,7 @@ export function CreateWorkspaceModal({
             Create a new workspace to organize your workflows and team.
           </SheetDescription>
         </SheetHeader>
-        <div className="mt-6">
+        <div className="mt-6 px-4">
           <CreateWorkspaceForm
             onSubmit={handleSubmit}
             isPending={isPending}
