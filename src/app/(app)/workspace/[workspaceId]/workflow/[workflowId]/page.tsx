@@ -17,6 +17,7 @@ import {
   useWorkflow,
 } from "@/features/workflow/hooks/useQueries";
 import { WorkflowStatus } from "@/types/workflow.types";
+import { ReactFlowProvider } from "@xyflow/react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -31,6 +32,8 @@ export default function WorkflowPage() {
   const { mutate: publishWorkflow } = usePublishWorkflow();
   const { mutate: archiveWorkflow } = useArchiveWorkflow();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Save as last workflow when viewing
   useEffect(() => {
@@ -87,6 +90,18 @@ export default function WorkflowPage() {
     setSettingsOpen(true);
   };
 
+  const handleSave = () => {
+    // Call the exposed save function from WorkflowEditor
+    if ((window as any).__workflowEditorSave) {
+      (window as any).__workflowEditorSave();
+    }
+  };
+
+  const handleSaveStateChange = (saving: boolean, unsaved: boolean) => {
+    setIsSaving(saving);
+    setHasUnsavedChanges(unsaved);
+  };
+
   if (isLoading) {
     return (
       <div className="flex-1 p-6">
@@ -135,8 +150,16 @@ export default function WorkflowPage() {
         onPublish={handlePublish}
         onArchive={handleArchive}
         onSettings={handleSettings}
+        onSave={handleSave}
+        isSaving={isSaving}
+        hasUnsavedChanges={hasUnsavedChanges}
       />
-      <WorkflowEditor />
+      <ReactFlowProvider>
+        <WorkflowEditor
+          workflowId={workflowId}
+          onSaveStateChange={handleSaveStateChange}
+        />
+      </ReactFlowProvider>
       <WorkflowSettings
         workflowId={workflowId}
         workspaceId={workspaceId}

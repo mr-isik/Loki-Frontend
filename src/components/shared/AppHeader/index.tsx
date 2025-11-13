@@ -19,6 +19,9 @@ interface AppHeaderProps {
   onPublish?: () => void;
   onArchive?: () => void;
   onSettings?: () => void;
+  onSave?: () => void;
+  isSaving?: boolean;
+  hasUnsavedChanges?: boolean;
   className?: string;
 }
 
@@ -32,6 +35,9 @@ export function AppHeader({
   onPublish,
   onArchive,
   onSettings,
+  onSave,
+  isSaving,
+  hasUnsavedChanges,
   className,
 }: AppHeaderProps) {
   const [isRunning, setIsRunning] = React.useState(false);
@@ -129,9 +135,12 @@ export function AppHeader({
         onPublish={handlePublish}
         onArchive={onArchive ? handleArchive : undefined}
         onSettings={handleSettings}
+        onSave={onSave}
         isRunning={isRunning}
         isPublishing={isPublishing}
         isArchiving={isArchiving}
+        isSaving={isSaving}
+        hasUnsavedChanges={hasUnsavedChanges}
       />
     </header>
   );

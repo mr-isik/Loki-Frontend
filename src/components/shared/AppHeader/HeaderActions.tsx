@@ -11,7 +11,7 @@ import {
   canPublishWorkflow,
   canRunWorkflow,
 } from "@/types/workflow.types";
-import { Archive, Play, Settings, Upload } from "lucide-react";
+import { Archive, Play, Save, Settings, Upload } from "lucide-react";
 import * as React from "react";
 
 /**
@@ -24,9 +24,12 @@ interface HeaderActionsProps {
   onPublish: () => void;
   onArchive?: () => void;
   onSettings: () => void;
+  onSave?: () => void;
   isRunning?: boolean;
   isPublishing?: boolean;
   isArchiving?: boolean;
+  isSaving?: boolean;
+  hasUnsavedChanges?: boolean;
   className?: string;
 }
 
@@ -41,9 +44,12 @@ export const HeaderActions: React.FC<HeaderActionsProps> = ({
   onPublish,
   onArchive,
   onSettings,
+  onSave,
   isRunning = false,
   isPublishing = false,
   isArchiving = false,
+  isSaving = false,
+  hasUnsavedChanges = false,
   className,
 }) => {
   const canRun = canRunWorkflow(workflow);
@@ -138,6 +144,35 @@ export const HeaderActions: React.FC<HeaderActionsProps> = ({
               </TooltipTrigger>
               <TooltipContent>
                 <p>Archive the workflow</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+
+          {/* Save Button */}
+          {hasUnsavedChanges && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={onSave}
+                  disabled={isSaving}
+                  variant="outline"
+                  size="sm"
+                >
+                  {isSaving ? (
+                    <>
+                      <Spinner />
+                      Saving
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      Save
+                    </>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Save changes (auto-saves every 2 seconds)</p>
               </TooltipContent>
             </Tooltip>
           )}
