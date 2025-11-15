@@ -90,13 +90,6 @@ export default function WorkflowPage() {
     setSettingsOpen(true);
   };
 
-  const handleSave = () => {
-    // Call the exposed save function from WorkflowEditor
-    if ((window as any).__workflowEditorSave) {
-      (window as any).__workflowEditorSave();
-    }
-  };
-
   const handleSaveStateChange = (saving: boolean, unsaved: boolean) => {
     setIsSaving(saving);
     setHasUnsavedChanges(unsaved);
@@ -150,7 +143,6 @@ export default function WorkflowPage() {
         onPublish={handlePublish}
         onArchive={handleArchive}
         onSettings={handleSettings}
-        onSave={handleSave}
         isSaving={isSaving}
         hasUnsavedChanges={hasUnsavedChanges}
       />

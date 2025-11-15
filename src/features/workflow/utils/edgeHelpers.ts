@@ -13,6 +13,7 @@ export const apiEdgeToReactFlowEdge = (apiEdge: any): ReactFlowEdge => {
     id: apiEdge.id,
     source: apiEdge.source_node_id,
     target: apiEdge.target_node_id,
+    type: 'default',
     animated: true,
   };
 };

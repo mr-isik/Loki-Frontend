@@ -11,7 +11,7 @@ import {
   canPublishWorkflow,
   canRunWorkflow,
 } from "@/types/workflow.types";
-import { Archive, Play, Save, Settings, Upload } from "lucide-react";
+import { Archive, Check, Play, Settings, Upload } from "lucide-react";
 import * as React from "react";
 
 /**
@@ -24,7 +24,6 @@ interface HeaderActionsProps {
   onPublish: () => void;
   onArchive?: () => void;
   onSettings: () => void;
-  onSave?: () => void;
   isRunning?: boolean;
   isPublishing?: boolean;
   isArchiving?: boolean;
@@ -44,7 +43,6 @@ export const HeaderActions: React.FC<HeaderActionsProps> = ({
   onPublish,
   onArchive,
   onSettings,
-  onSave,
   isRunning = false,
   isPublishing = false,
   isArchiving = false,
@@ -55,10 +53,47 @@ export const HeaderActions: React.FC<HeaderActionsProps> = ({
   const canRun = canRunWorkflow(workflow);
   const canPublish = canPublishWorkflow(workflow);
 
+  // Show "Saved" message briefly after save completes
+  const [showSaved, setShowSaved] = React.useState(false);
+  const prevSavingRef = React.useRef(isSaving);
+
+  React.useEffect(() => {
+    // When saving transitions from true to false, show "Saved" message
+    if (prevSavingRef.current && !isSaving && !hasUnsavedChanges) {
+      setShowSaved(true);
+      const timer = setTimeout(() => setShowSaved(false), 2000);
+      prevSavingRef.current = isSaving;
+      return () => clearTimeout(timer);
+    }
+
+    prevSavingRef.current = isSaving;
+
+    if (hasUnsavedChanges) {
+      setShowSaved(false);
+    }
+  }, [isSaving, hasUnsavedChanges]);
+
   return (
     <div className={className}>
       <TooltipProvider>
         <div className="flex items-center gap-2">
+          {/* Auto-save Status Indicator */}
+          {(isSaving || showSaved) && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/50 text-sm">
+              {isSaving ? (
+                <>
+                  <Spinner className="h-3 w-3" />
+                  <span className="text-muted-foreground">Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Check className="h-3 w-3 text-green-600" />
+                  <span className="text-green-600 font-medium">Saved</span>
+                </>
+              )}
+            </div>
+          )}
+
           {/* Run Button */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -144,35 +179,6 @@ export const HeaderActions: React.FC<HeaderActionsProps> = ({
               </TooltipTrigger>
               <TooltipContent>
                 <p>Archive the workflow</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-
-          {/* Save Button */}
-          {hasUnsavedChanges && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  onClick={onSave}
-                  disabled={isSaving}
-                  variant="outline"
-                  size="sm"
-                >
-                  {isSaving ? (
-                    <>
-                      <Spinner />
-                      Saving
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4" />
-                      Save
-                    </>
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Save changes (auto-saves every 2 seconds)</p>
               </TooltipContent>
             </Tooltip>
           )}

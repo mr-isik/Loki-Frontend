@@ -8,7 +8,11 @@ import {
   useCreateWorkflowEdge,
   useDeleteWorkflowEdge,
 } from "@/features/node/hooks/useQueries";
-import { Connection, EdgeChange, Edge as ReactFlowEdge } from "@xyflow/react";
+import {
+  Connection,
+  EdgeChange,
+  Edge as ReactFlowEdge,
+} from "@xyflow/react";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { apiEdgeToReactFlowEdge, edgeExists } from "../utils/edgeHelpers";
@@ -55,27 +59,16 @@ export const useWorkflowEdgeHandlers = ({
    * Backend now returns the created edge, so no need for optimistic updates
    */
   const handleConnect = useCallback(
-    (params: Connection) => {
-      if (!params.source || !params.target || !params.workflowId) return;
+    (params: Connection, edges: ReactFlowEdge[]) => {
+      if (!params.source || !params.target) return;
 
-      setLocalEdges((edges) => {
-        if (edgeExists(edges, params.source!, params.target!)) {
-          toast.error("Connection already exists between these nodes");
-        }
-        return edges;
-      });
+      // Check for duplicates
+      if (edgeExists(edges, params.source, params.target)) {
+        toast.error("Connection already exists between these nodes");
+        return;
+      }
 
-      // Check again after state update
-      let shouldCreate = true;
-      setLocalEdges((edges) => {
-        if (edgeExists(edges, params.source!, params.target!)) {
-          shouldCreate = false;
-        }
-        return edges;
-      });
-
-      if (!shouldCreate) return;
-
+      // Proceed with API call
       const edgeData = reactFlowConnectionToApiEdge(params);
       createEdge(
         {
@@ -87,7 +80,7 @@ export const useWorkflowEdgeHandlers = ({
         {
           onSuccess: (response: any) => {
             const newEdge = apiEdgeToReactFlowEdge(response);
-            setLocalEdges((edges) => [...edges, newEdge]);
+            setLocalEdges((prevEdges) => [...prevEdges, newEdge]);
             toast.success("Connection created");
           },
           onError: (error) => {

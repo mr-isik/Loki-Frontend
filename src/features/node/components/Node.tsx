@@ -82,7 +82,13 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
       <Handle
         type="target"
         position={Position.Left}
-        className="w-2! h-2! bg-gray-400! border-0!"
+        id="target"
+        style={{
+          width: 12,
+          height: 12,
+          backgroundColor: "#6B7280",
+          border: "2px solid white",
+        }}
       />
 
       {/* n8n Minimal Style Node */}
@@ -111,7 +117,13 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
       <Handle
         type="source"
         position={Position.Right}
-        className="w-2! h-2! bg-gray-400! border-0!"
+        id="source"
+        style={{
+          width: 12,
+          height: 12,
+          backgroundColor: "#6B7280",
+          border: "2px solid white",
+        }}
       />
 
       {/* Node Content */}

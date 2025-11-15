@@ -1,11 +1,3 @@
-/**
- * WorkflowEditor Component
- * Refactored following SOLID Principles
- * - Single Responsibility: Focuses only on rendering and orchestrating
- * - Open/Closed: Easy to extend with new features via hooks
- * - Dependency Inversion: Depends on abstractions (hooks, utils)
- */
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -114,26 +106,16 @@ const WorkflowEditor = ({
   }, [updateNodeAsync, workflowId]);
 
   // Auto-save hook
-  const { triggerAutoSave, saveNow, hasUnsavedChanges, isSaving } = useAutoSave(
-    {
-      onSave: performBatchSave,
-      delay: 2000,
-      enabled: true,
-    }
-  );
+  const { triggerAutoSave, hasUnsavedChanges, isSaving } = useAutoSave({
+    onSave: performBatchSave,
+    delay: 2000,
+    enabled: true,
+  });
 
   // Notify parent about save state changes
   useEffect(() => {
     onSaveStateChange?.(isSaving, hasUnsavedChanges);
   }, [isSaving, hasUnsavedChanges, onSaveStateChange]);
-
-  // Expose saveNow to parent (for manual save button)
-  useEffect(() => {
-    (window as any).__workflowEditorSave = saveNow;
-    return () => {
-      delete (window as any).__workflowEditorSave;
-    };
-  }, [saveNow]);
 
   const { handleNodesChange, handleTemplateSelect } = useWorkflowNodeHandlers({
     workflowId,
@@ -149,6 +131,12 @@ const WorkflowEditor = ({
     setLocalEdges,
     applyEdgeChanges,
   });
+
+  // Wrapper for handleConnect to pass current edges
+  const onConnect = useCallback(
+    (params: any) => handleConnect(params, localEdges),
+    [handleConnect, localEdges]
+  );
 
   // Loading state
   if (nodesLoading || edgesLoading) {
@@ -166,12 +154,14 @@ const WorkflowEditor = ({
         edges={localEdges}
         onNodesChange={handleNodesChange}
         onEdgesChange={handleEdgesChange}
-        onConnect={handleConnect}
+        onConnect={onConnect}
         nodeTypes={nodeTypes}
         fitView
         edgesFocusable
         defaultEdgeOptions={{
-          style: { strokeWidth: 2, stroke: "hsl(var(--primary))" },
+          type: "default",
+          animated: true,
+          style: { strokeWidth: 3, stroke: "#644a40" },
         }}
       >
         <Controls />
@@ -186,7 +176,7 @@ const WorkflowEditor = ({
           onClick={() => setIsTemplateSheetOpen(true)}
           className="shadow-lg"
         >
-          <Plus className="mr-2 h-5 w-5" />
+          <Plus className=" h-5 w-5" />
           Add Node
         </Button>
       </div>
