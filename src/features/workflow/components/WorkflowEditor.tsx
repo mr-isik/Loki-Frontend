@@ -130,15 +130,16 @@ const WorkflowEditor = ({
     onSaveStateChange?.(isSaving, hasUnsavedChanges);
   }, [isSaving, hasUnsavedChanges, onSaveStateChange]);
 
-  const { handleNodesChange, handleTemplateSelect } = useWorkflowNodeHandlers({
-    workflowId,
-    screenToFlowPosition,
-    setLocalNodes,
-    applyNodeChanges,
-    pendingNodeUpdates,
-    triggerAutoSave,
-    templateMap,
-  });
+  const { handleNodesChange, handleTemplateSelect, handleUpdateNodeData } =
+    useWorkflowNodeHandlers({
+      workflowId,
+      screenToFlowPosition,
+      setLocalNodes,
+      setLocalEdges,
+      applyNodeChanges,
+      pendingNodeUpdates,
+      triggerAutoSave,
+    });
 
   const { handleEdgesChange, handleConnect } = useWorkflowEdgeHandlers({
     workflowId,
@@ -152,6 +153,17 @@ const WorkflowEditor = ({
     [handleConnect, localEdges]
   );
 
+  // Add onUpdateNode callback to all nodes
+  const nodesWithCallbacks = useMemo(() => {
+    return localNodes.map((node) => ({
+      ...node,
+      data: {
+        ...node.data,
+        onUpdateNode: handleUpdateNodeData,
+      },
+    }));
+  }, [localNodes, handleUpdateNodeData]);
+
   // Loading state
   if (nodesLoading || edgesLoading || templatesLoading) {
     return (
@@ -164,7 +176,7 @@ const WorkflowEditor = ({
   return (
     <div className="w-full h-screen relative">
       <ReactFlow
-        nodes={localNodes}
+        nodes={nodesWithCallbacks}
         edges={localEdges}
         onNodesChange={handleNodesChange}
         onEdgesChange={handleEdgesChange}
@@ -172,6 +184,7 @@ const WorkflowEditor = ({
         nodeTypes={nodeTypes}
         fitView
         edgesFocusable
+        deleteKeyCode="Delete"
         defaultEdgeOptions={{
           type: "default",
           animated: true,

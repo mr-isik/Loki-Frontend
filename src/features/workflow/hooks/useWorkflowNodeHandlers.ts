@@ -26,6 +26,7 @@ interface UseWorkflowNodesParams {
     y: number;
   };
   setLocalNodes: React.Dispatch<React.SetStateAction<ReactFlowNode[]>>;
+  setLocalEdges: React.Dispatch<React.SetStateAction<any[]>>;
   applyNodeChanges: (
     changes: NodeChange[],
     nodes: ReactFlowNode[]
@@ -34,17 +35,16 @@ interface UseWorkflowNodesParams {
     Map<string, { position_x: number; position_y: number }>
   >;
   triggerAutoSave: () => void;
-  templateMap: Map<string, NodeTemplateResponse>;
 }
 
 export const useWorkflowNodeHandlers = ({
   workflowId,
   screenToFlowPosition,
   setLocalNodes,
+  setLocalEdges,
   applyNodeChanges,
   pendingNodeUpdates,
   triggerAutoSave,
-  templateMap,
 }: UseWorkflowNodesParams) => {
   const { mutateAsync: createNodeAsync } = useCreateWorkflowNode();
   const { mutate: deleteNode } = useDeleteWorkflowNode();
@@ -71,6 +71,12 @@ export const useWorkflowNodeHandlers = ({
             nodeId: change.id,
             workflowId,
           });
+          // Remove all edges connected to this node
+          setLocalEdges((edges) =>
+            edges.filter(
+              (edge) => edge.source !== change.id && edge.target !== change.id
+            )
+          );
         }
       });
     },
@@ -79,6 +85,7 @@ export const useWorkflowNodeHandlers = ({
       workflowId,
       triggerAutoSave,
       setLocalNodes,
+      setLocalEdges,
       applyNodeChanges,
       pendingNodeUpdates,
     ]
@@ -129,25 +136,40 @@ export const useWorkflowNodeHandlers = ({
             return updatedNode;
           })
         );
-
-        toast.success(`Added ${template.name} node`);
       } catch (error: any) {
         // Remove optimistic node on error
         setLocalNodes((nodes) => nodes.filter((node) => node.id !== tempId));
         toast.error(error.message || "Failed to add node");
       }
     },
-    [
-      createNodeAsync,
-      workflowId,
-      screenToFlowPosition,
-      setLocalNodes,
-      templateMap,
-    ]
+    [createNodeAsync, workflowId, screenToFlowPosition, setLocalNodes]
+  );
+
+  /**
+   * Handle node data updates (e.g., from configuration modal)
+   */
+  const handleUpdateNodeData = useCallback(
+    (nodeId: string, newData: Record<string, any>) => {
+      // Update local state
+      setLocalNodes((nodes) =>
+        nodes.map((node) =>
+          node.id === nodeId
+            ? { ...node, data: { ...node.data, ...newData } }
+            : node
+        )
+      );
+
+      // Add to pending updates for auto-save
+      // Note: Auto-save currently only handles position updates
+      // TODO: Extend auto-save to handle data updates
+      triggerAutoSave();
+    },
+    [setLocalNodes, triggerAutoSave]
   );
 
   return {
     handleNodesChange,
     handleTemplateSelect,
+    handleUpdateNodeData,
   };
 };

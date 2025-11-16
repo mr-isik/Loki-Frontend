@@ -85,7 +85,6 @@ export const useWorkflowEdgeHandlers = ({
           onSuccess: (response: any) => {
             const newEdge = apiEdgeToReactFlowEdge(response);
             setLocalEdges((prevEdges) => [...prevEdges, newEdge]);
-            toast.success("Connection created");
           },
           onError: (error) => {
             toast.error(error.message || "Failed to create connection");
