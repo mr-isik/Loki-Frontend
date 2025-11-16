@@ -106,9 +106,8 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
       )}
 
       {/* Node Content */}
-      <div className="p-2 absolute top-full left-1/2 transform -translate-x-1/2 mt-1 w-max max-w-xs text-center">
+      <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 w-max max-w-xs text-center">
         <h4 className="text-sm font-medium">{node.name}</h4>
-        <p className="text-xs text-gray-500">{node.description}</p>
       </div>
     </div>
   );
