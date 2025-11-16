@@ -8,11 +8,7 @@ import {
   useCreateWorkflowEdge,
   useDeleteWorkflowEdge,
 } from "@/features/node/hooks/useQueries";
-import {
-  Connection,
-  EdgeChange,
-  Edge as ReactFlowEdge,
-} from "@xyflow/react";
+import { Connection, EdgeChange, Edge as ReactFlowEdge } from "@xyflow/react";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { apiEdgeToReactFlowEdge, edgeExists } from "../utils/edgeHelpers";
@@ -62,9 +58,17 @@ export const useWorkflowEdgeHandlers = ({
     (params: Connection, edges: ReactFlowEdge[]) => {
       if (!params.source || !params.target) return;
 
-      // Check for duplicates
-      if (edgeExists(edges, params.source, params.target)) {
-        toast.error("Connection already exists between these nodes");
+      // Check for duplicates including handle IDs
+      if (
+        edgeExists(
+          edges,
+          params.source,
+          params.target,
+          params.sourceHandle,
+          params.targetHandle
+        )
+      ) {
+        toast.error("Connection already exists between these handles");
         return;
       }
 

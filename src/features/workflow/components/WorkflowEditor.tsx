@@ -8,6 +8,7 @@ import {
 import CustomNode from "@/features/node/components/Node";
 import { NodeTemplateSheet } from "@/features/node/components/NodeTemplateSheet";
 import {
+  useNodeTemplates,
   useUpdateWorkflowNode,
   useWorkflowEdges,
   useWorkflowNodes,
@@ -64,6 +65,8 @@ const WorkflowEditor = ({
     useWorkflowNodes(workflowId);
   const { data: apiEdges, isLoading: edgesLoading } =
     useWorkflowEdges(workflowId);
+  const { data: templatesData, isLoading: templatesLoading } =
+    useNodeTemplates();
 
   // Mutations
   const { mutateAsync: updateNodeAsync } = useUpdateWorkflowNode();
@@ -71,11 +74,21 @@ const WorkflowEditor = ({
   // Node types configuration
   const nodeTypes = useMemo(() => ({ customNode: CustomNode }), []);
 
+  // Create template lookup map
+  const templateMap = useMemo(() => {
+    if (!templatesData?.templates) return new Map();
+    return new Map(
+      templatesData.templates.map((template) => [template.id, template])
+    );
+  }, [templatesData]);
+
   // Initialize and validate data from API
   const initialNodes = useMemo(() => {
     if (!apiNodes) return [];
-    return apiNodes.map(apiNodeToReactFlowNode);
-  }, [apiNodes]);
+    return apiNodes.map((node) =>
+      apiNodeToReactFlowNode(node, templateMap.get(node.template_id))
+    );
+  }, [apiNodes, templateMap]);
 
   const initialEdges = useMemo(() => {
     if (!apiEdges) return [];
@@ -124,6 +137,7 @@ const WorkflowEditor = ({
     applyNodeChanges,
     pendingNodeUpdates,
     triggerAutoSave,
+    templateMap,
   });
 
   const { handleEdgesChange, handleConnect } = useWorkflowEdgeHandlers({
@@ -139,7 +153,7 @@ const WorkflowEditor = ({
   );
 
   // Loading state
-  if (nodesLoading || edgesLoading) {
+  if (nodesLoading || edgesLoading || templatesLoading) {
     return (
       <div className="w-full h-screen flex items-center justify-center">
         <div className="text-muted-foreground">Loading workflow...</div>

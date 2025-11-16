@@ -34,6 +34,20 @@ export const nodeTemplateResponseSchema = z.object({
   category: z.string().min(1),
   description: z.string().min(1),
   type_key: z.string().min(1),
+  inputs: z
+    .array(
+      z.object({
+        id: z.string(),
+        label: z.string(),
+      })
+    )
+    .optional(),
+  outputs: z.array(
+    z.object({
+      id: z.string(),
+      label: z.string(),
+    })
+  ),
 });
 
 export const nodeTemplatesResponseSchema = z.object({

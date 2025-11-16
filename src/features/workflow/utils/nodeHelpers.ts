@@ -85,6 +85,7 @@ export const createOptimisticNode = (
       } as any,
       templateId: template.id,
       workflowId: workflowId,
+      template: template, // Add template to data
     },
   };
 };

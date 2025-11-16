@@ -6,16 +6,19 @@
 
 import { AutomationNode, NodeType } from "@/types/node.types";
 import { Edge, Node } from "@xyflow/react";
-import { WorkflowNodeResponse } from "../validation";
+import { NodeTemplateResponse, WorkflowNodeResponse } from "../validation";
 
-export const apiNodeToReactFlowNode = (apiNode: WorkflowNodeResponse): Node => {
+export const apiNodeToReactFlowNode = (
+  apiNode: WorkflowNodeResponse,
+  template?: NodeTemplateResponse
+): Node => {
   const automationNode: AutomationNode = {
     id: apiNode.id,
-    name: apiNode.data.label || apiNode.data.name || "Untitled Node",
+    name: template?.name || apiNode.data.name || "Untitled Node",
     type: (apiNode.data.type as NodeType) || NodeType.API_CALL,
-    description: apiNode.data.description || "",
+    description: template?.description || apiNode.data.description || "",
     icon: apiNode.data.icon || "zap",
-    category: apiNode.data.category || "General",
+    category: template?.category || apiNode.data.category || "General",
     ...apiNode.data,
   } as AutomationNode;
 
@@ -30,6 +33,7 @@ export const apiNodeToReactFlowNode = (apiNode: WorkflowNodeResponse): Node => {
       node: automationNode,
       templateId: apiNode.template_id,
       workflowId: apiNode.workflow_id,
+      template: template, // Include template for handle rendering
     },
   };
 };
@@ -56,9 +60,9 @@ export const apiEdgeToReactFlowEdge = (apiEdge: {
     id: apiEdge.id,
     source: apiEdge.source_node_id,
     target: apiEdge.target_node_id,
-    // Don't specify handle if it's "default" - let ReactFlow handle it
-    sourceHandle: undefined,
-    targetHandle: undefined,
+    sourceHandle: apiEdge.source_handle || undefined,
+    targetHandle: apiEdge.target_handle || undefined,
+    type: "default",
     animated: true,
   };
 };
@@ -72,7 +76,7 @@ export const reactFlowConnectionToApiEdge = (params: {
   return {
     source_node_id: params.source,
     target_node_id: params.target,
-    source_handle: params.sourceHandle || "default",
-    target_handle: params.targetHandle || "default",
+    source_handle: params.sourceHandle || "source",
+    target_handle: params.targetHandle || "target",
   };
 };

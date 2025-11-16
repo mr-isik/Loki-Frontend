@@ -140,7 +140,6 @@ export const getNodeColor = (nodeType: string): NodeColors => {
   if (controlNodes.includes(nodeType)) return categoryColors.control;
   if (triggerNodes.includes(nodeType)) return categoryColors.trigger;
 
-  // Special case for Discord (keeping original color)
   if (nodeType === "discord_message") {
     return {
       main: "#5865F2",
@@ -152,7 +151,6 @@ export const getNodeColor = (nodeType: string): NodeColors => {
     };
   }
 
-  // Default color (gray)
   return {
     main: "#6B7280",
     border: "border-[#6B7280]",

@@ -34,6 +34,7 @@ interface UseWorkflowNodesParams {
     Map<string, { position_x: number; position_y: number }>
   >;
   triggerAutoSave: () => void;
+  templateMap: Map<string, NodeTemplateResponse>;
 }
 
 export const useWorkflowNodeHandlers = ({
@@ -43,6 +44,7 @@ export const useWorkflowNodeHandlers = ({
   applyNodeChanges,
   pendingNodeUpdates,
   triggerAutoSave,
+  templateMap,
 }: UseWorkflowNodesParams) => {
   const { mutateAsync: createNodeAsync } = useCreateWorkflowNode();
   const { mutate: deleteNode } = useDeleteWorkflowNode();
@@ -112,11 +114,20 @@ export const useWorkflowNodeHandlers = ({
           data: nodeData,
         });
 
-        // Replace temp node with real node from API
+        // Replace temp node with real node from API, keeping template
         setLocalNodes((nodes) =>
-          nodes.map((node) =>
-            updateNodeWithRealId(node, tempId, (response as any).id)
-          )
+          nodes.map((node) => {
+            if (node.id !== tempId) return node;
+
+            const updatedNode = updateNodeWithRealId(
+              node,
+              tempId,
+              (response as any).id
+            );
+            // Ensure template is in the updated node
+            updatedNode.data.template = template;
+            return updatedNode;
+          })
         );
 
         toast.success(`Added ${template.name} node`);
@@ -126,7 +137,13 @@ export const useWorkflowNodeHandlers = ({
         toast.error(error.message || "Failed to add node");
       }
     },
-    [createNodeAsync, workflowId, screenToFlowPosition, setLocalNodes]
+    [
+      createNodeAsync,
+      workflowId,
+      screenToFlowPosition,
+      setLocalNodes,
+      templateMap,
+    ]
   );
 
   return {
