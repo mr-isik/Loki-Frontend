@@ -1,9 +1,9 @@
 "use client";
 
-import { AutomationNode, NodeType } from "@/types/node.types";
+import { AutomationNode } from "@/types/node.types";
 import { Handle, Position } from "@xyflow/react";
-import { Globe, LucideIcon, MessageSquare, Terminal, Zap } from "lucide-react";
-import { memo } from "react";
+import { createElement, memo, useMemo } from "react";
+import { getNodeColor, getNodeIcon } from "../utils/nodeStyles";
 
 interface CustomNodeProps {
   data: {
@@ -13,68 +13,11 @@ interface CustomNodeProps {
   selected?: boolean;
 }
 
-const getNodeIcon = (type: NodeType): LucideIcon => {
-  switch (type) {
-    case NodeType.API_CALL:
-      return Globe;
-    case NodeType.SHELL_COMMAND:
-      return Terminal;
-    case NodeType.DISCORD_MESSAGE:
-      return MessageSquare;
-    default:
-      return Zap;
-  }
-};
-
-const getNodeColor = (type: NodeType) => {
-  switch (type) {
-    case NodeType.API_CALL:
-      return {
-        main: "#FF6D5A",
-        border: "border-[#FF6D5A]",
-        borderBottom: "border-b-[#E85B4A]",
-        borderRight: "border-r-[#E85B4A]",
-        icon: "text-white",
-        iconBg: "bg-[#FF6D5A]",
-      };
-    case NodeType.SHELL_COMMAND:
-      return {
-        main: "#10B981",
-        border: "border-[#10B981]",
-        borderBottom: "border-b-[#059669]",
-        borderRight: "border-r-[#059669]",
-        icon: "text-white",
-        iconBg: "bg-[#10B981]",
-      };
-    case NodeType.DISCORD_MESSAGE:
-      return {
-        main: "#8B5CF6",
-        border: "border-[#8B5CF6]",
-        borderBottom: "border-b-[#7C3AED]",
-        borderRight: "border-r-[#7C3AED]",
-        icon: "text-white",
-        iconBg: "bg-[#8B5CF6]",
-      };
-    default:
-      return {
-        main: "#6B7280",
-        border: "border-[#6B7280]",
-        borderBottom: "border-b-[#4B5563]",
-        borderRight: "border-r-[#4B5563]",
-        icon: "text-white",
-        iconBg: "bg-[#6B7280]",
-      };
-  }
-};
-
 const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
   const { node } = data;
-  const colors = getNodeColor(node.type);
-
-  const renderIcon = () => {
-    const Icon = getNodeIcon(node.type);
-    return <Icon className={`w-4 h-4 ${colors.icon}`} />;
-  };
+  const nodeTypeKey = (node as any).template_id || node.type;
+  const colors = useMemo(() => getNodeColor(nodeTypeKey), [nodeTypeKey]);
+  const IconComponent = useMemo(() => getNodeIcon(nodeTypeKey), [nodeTypeKey]);
 
   return (
     <div className="relative">
@@ -108,7 +51,9 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
           <div
             className={`w-7! h-7! rounded-full ${colors.iconBg} flex items-center justify-center shrink-0`}
           >
-            {renderIcon()}
+            {createElement(IconComponent, {
+              className: `w-4 h-4 ${colors.icon}`,
+            })}
           </div>
         </div>
       </div>
