@@ -37,6 +37,7 @@ export const useNodeTemplates = () => {
       }
       return data;
     },
+    staleTime: Infinity,
   });
 };
 
@@ -55,6 +56,7 @@ export const useWorkflowNodes = (workflowId: string) => {
       return data.nodes;
     },
     enabled: !!workflowId,
+    staleTime: Infinity,
   });
 };
 
@@ -72,6 +74,7 @@ export const useWorkflowEdges = (workflowId: string) => {
       return data.edges;
     },
     enabled: !!workflowId,
+    staleTime: Infinity,
   });
 };
 

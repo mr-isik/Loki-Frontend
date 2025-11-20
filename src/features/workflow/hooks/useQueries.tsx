@@ -29,6 +29,7 @@ export const useWorkflows = (workspaceId: string) => {
       return data.data;
     },
     enabled: !!workspaceId,
+    staleTime: Infinity,
   });
 };
 
@@ -48,6 +49,7 @@ export const useWorkflow = (workflowId: string) => {
       return data;
     },
     enabled: !!workflowId,
+    staleTime: Infinity,
   });
 };
 

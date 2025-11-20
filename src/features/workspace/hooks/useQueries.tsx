@@ -36,6 +36,7 @@ export const useWorkspaces = (page: number = 1, pageSize: number = 100) => {
       // Extract workspaces array from paginated response
       return data.data;
     },
+    staleTime: Infinity,  
   });
 };
 
@@ -60,6 +61,7 @@ export const useWorkspacesPaginated = (
       // Return full paginated response
       return data;
     },
+    staleTime: Infinity,
   });
 };
 
@@ -87,6 +89,7 @@ export const useWorkspacesInfinite = (pageSize: number = 10) => {
       return undefined;
     },
     initialPageParam: 1,
+    staleTime: Infinity,
   });
 };
 
@@ -106,6 +109,7 @@ export const useWorkspace = (workspaceId: string) => {
       return data;
     },
     enabled: !!workspaceId,
+    staleTime: Infinity,
   });
 };
 
