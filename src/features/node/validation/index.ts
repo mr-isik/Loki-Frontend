@@ -25,7 +25,7 @@ export const workflowNodeResponseSchema = z.object({
 
 export const workflowNodesResponseSchema = z.object({
   count: z.number().min(0),
-  nodes: z.array(workflowNodeResponseSchema),
+  nodes: z.array(workflowNodeResponseSchema).optional(),
 });
 
 export const nodeTemplateResponseSchema = z.object({
