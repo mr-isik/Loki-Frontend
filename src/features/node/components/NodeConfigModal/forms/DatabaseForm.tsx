@@ -2,7 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import {
+    DatabaseFormValues,
+    databaseSchema,
+} from "@/features/node/validation/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { BaseNodeFormProps } from "../BaseNodeForm";
 
 export const DatabaseForm = ({
@@ -10,22 +15,24 @@ export const DatabaseForm = ({
   onSave,
   onCancel,
 }: BaseNodeFormProps) => {
-  const [host, setHost] = useState(nodeData.host || "localhost");
-  const [port, setPort] = useState(nodeData.port || "5432");
-  const [database, setDatabase] = useState(nodeData.database || "");
-  const [username, setUsername] = useState(nodeData.username || "");
-  const [password, setPassword] = useState(nodeData.password || "");
-  const [query, setQuery] = useState(nodeData.query || "");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<DatabaseFormValues>({
+    resolver: zodResolver(databaseSchema),
+    defaultValues: {
+      host: nodeData.host || "localhost",
+      port: nodeData.port || 5432,
+      database: nodeData.database || "",
+      username: nodeData.username || "",
+      password: nodeData.password || "",
+      query: nodeData.query || "",
+    },
+  });
 
-  const handleSave = () => {
-    onSave({
-      host,
-      port: parseInt(port),
-      database,
-      username,
-      password,
-      query,
-    });
+  const onSubmit = (data: DatabaseFormValues) => {
+    onSave(data);
   };
 
   return (
@@ -36,18 +43,23 @@ export const DatabaseForm = ({
           <Input
             id="host"
             placeholder="localhost"
-            value={host}
-            onChange={(e) => setHost(e.target.value)}
+            {...register("host")}
           />
+          {errors.host && (
+            <p className="text-sm text-red-500">{errors.host.message}</p>
+          )}
         </div>
         <div>
           <Label htmlFor="port">Port</Label>
           <Input
             id="port"
             placeholder="5432"
-            value={port}
-            onChange={(e) => setPort(e.target.value)}
+            type="number"
+            {...register("port", { valueAsNumber: true })}
           />
+          {errors.port && (
+            <p className="text-sm text-red-500">{errors.port.message}</p>
+          )}
         </div>
       </div>
 
@@ -56,9 +68,11 @@ export const DatabaseForm = ({
         <Input
           id="database"
           placeholder="my_database"
-          value={database}
-          onChange={(e) => setDatabase(e.target.value)}
+          {...register("database")}
         />
+        {errors.database && (
+          <p className="text-sm text-red-500">{errors.database.message}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -67,9 +81,11 @@ export const DatabaseForm = ({
           <Input
             id="username"
             placeholder="user"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            {...register("username")}
           />
+          {errors.username && (
+            <p className="text-sm text-red-500">{errors.username.message}</p>
+          )}
         </div>
         <div>
           <Label htmlFor="password">Password</Label>
@@ -77,8 +93,7 @@ export const DatabaseForm = ({
             id="password"
             type="password"
             placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            {...register("password")}
           />
         </div>
       </div>
@@ -89,13 +104,15 @@ export const DatabaseForm = ({
           id="query"
           className="font-mono text-sm"
           placeholder="SELECT * FROM users WHERE id = $1"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
           rows={6}
+          {...register("query")}
         />
         <p className="text-xs text-muted-foreground mt-1">
           Use $1, $2, etc. for parameterized queries
         </p>
+        {errors.query && (
+          <p className="text-sm text-red-500">{errors.query.message}</p>
+        )}
       </div>
 
       <div className="flex justify-end gap-2 pt-4">
@@ -103,8 +120,8 @@ export const DatabaseForm = ({
           Cancel
         </Button>
         <Button
-          onClick={handleSave}
-          disabled={!database || !username || !query}
+          onClick={handleSubmit(onSubmit)}
+          disabled={!isValid}
         >
           Save Configuration
         </Button>

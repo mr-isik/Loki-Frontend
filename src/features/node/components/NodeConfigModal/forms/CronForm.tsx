@@ -2,14 +2,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import {
+    CronFormValues,
+    cronSchema,
+} from "@/features/node/validation/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { BaseNodeFormProps } from "../BaseNodeForm";
 
 export const CronForm = ({
@@ -17,20 +22,25 @@ export const CronForm = ({
   onSave,
   onCancel,
 }: BaseNodeFormProps) => {
-  const [cronExpression, setCronExpression] = useState(
-    nodeData.cronExpression || "0 9 * * *"
-  );
-  const [timezone, setTimezone] = useState(
-    nodeData.timezone || "America/New_York"
-  );
-  const [description, setDescription] = useState(nodeData.description || "");
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isValid },
+  } = useForm<CronFormValues>({
+    resolver: zodResolver(cronSchema),
+    defaultValues: {
+      cronExpression: nodeData.cronExpression || "0 9 * * *",
+      timezone: nodeData.timezone || "America/New_York",
+      description: nodeData.description || "",
+    },
+  });
 
-  const handleSave = () => {
-    onSave({
-      cronExpression,
-      timezone,
-      description,
-    });
+  const timezone = watch("timezone");
+
+  const onSubmit = (data: CronFormValues) => {
+    onSave(data);
   };
 
   const cronPresets = [
@@ -48,13 +58,17 @@ export const CronForm = ({
         <Input
           id="cronExpression"
           placeholder="0 9 * * *"
-          value={cronExpression}
-          onChange={(e) => setCronExpression(e.target.value)}
           className="font-mono"
+          {...register("cronExpression")}
         />
         <p className="text-xs text-muted-foreground mt-1">
           Format: minute hour day month weekday
         </p>
+        {errors.cronExpression && (
+          <p className="text-sm text-red-500">
+            {errors.cronExpression.message}
+          </p>
+        )}
       </div>
 
       <div>
@@ -65,7 +79,7 @@ export const CronForm = ({
               key={preset.value}
               variant="outline"
               size="sm"
-              onClick={() => setCronExpression(preset.value)}
+              onClick={() => setValue("cronExpression", preset.value)}
               className="justify-start text-xs"
             >
               {preset.label}
@@ -76,7 +90,10 @@ export const CronForm = ({
 
       <div>
         <Label htmlFor="timezone">Timezone</Label>
-        <Select value={timezone} onValueChange={setTimezone}>
+        <Select
+          value={timezone}
+          onValueChange={(val) => setValue("timezone", val)}
+        >
           <SelectTrigger id="timezone">
             <SelectValue />
           </SelectTrigger>
@@ -102,9 +119,8 @@ export const CronForm = ({
         <Textarea
           id="description"
           placeholder="When should this run?"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
           rows={2}
+          {...register("description")}
         />
       </div>
 
@@ -127,7 +143,7 @@ export const CronForm = ({
         <Button variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button onClick={handleSave} disabled={!cronExpression}>
+        <Button onClick={handleSubmit(onSubmit)} disabled={!isValid}>
           Save Configuration
         </Button>
       </div>

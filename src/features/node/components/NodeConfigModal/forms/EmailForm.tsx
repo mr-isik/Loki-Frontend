@@ -2,7 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import {
+    EmailFormValues,
+    emailSchema,
+} from "@/features/node/validation/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { BaseNodeFormProps } from "../BaseNodeForm";
 
 export const EmailForm = ({
@@ -10,26 +15,26 @@ export const EmailForm = ({
   onSave,
   onCancel,
 }: BaseNodeFormProps) => {
-  const [smtpHost, setSmtpHost] = useState(nodeData.smtpHost || "");
-  const [smtpPort, setSmtpPort] = useState(nodeData.smtpPort || "587");
-  const [smtpUser, setSmtpUser] = useState(nodeData.smtpUser || "");
-  const [smtpPassword, setSmtpPassword] = useState(nodeData.smtpPassword || "");
-  const [from, setFrom] = useState(nodeData.from || "");
-  const [to, setTo] = useState(nodeData.to || "");
-  const [subject, setSubject] = useState(nodeData.subject || "");
-  const [body, setBody] = useState(nodeData.body || "");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<EmailFormValues>({
+    resolver: zodResolver(emailSchema),
+    defaultValues: {
+      smtpHost: nodeData.smtpHost || "",
+      smtpPort: nodeData.smtpPort || 587,
+      smtpUser: nodeData.smtpUser || "",
+      smtpPassword: nodeData.smtpPassword || "",
+      from: nodeData.from || "",
+      to: nodeData.to || "",
+      subject: nodeData.subject || "",
+      body: nodeData.body || "",
+    },
+  });
 
-  const handleSave = () => {
-    onSave({
-      smtpHost,
-      smtpPort: parseInt(smtpPort),
-      smtpUser,
-      smtpPassword,
-      from,
-      to,
-      subject,
-      body,
-    });
+  const onSubmit = (data: EmailFormValues) => {
+    onSave(data);
   };
 
   return (
@@ -42,18 +47,23 @@ export const EmailForm = ({
             <Input
               id="smtpHost"
               placeholder="smtp.gmail.com"
-              value={smtpHost}
-              onChange={(e) => setSmtpHost(e.target.value)}
+              {...register("smtpHost")}
             />
+            {errors.smtpHost && (
+              <p className="text-sm text-red-500">{errors.smtpHost.message}</p>
+            )}
           </div>
           <div>
             <Label htmlFor="smtpPort">Port</Label>
             <Input
               id="smtpPort"
               placeholder="587"
-              value={smtpPort}
-              onChange={(e) => setSmtpPort(e.target.value)}
+              type="number"
+              {...register("smtpPort", { valueAsNumber: true })}
             />
+            {errors.smtpPort && (
+              <p className="text-sm text-red-500">{errors.smtpPort.message}</p>
+            )}
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -62,8 +72,7 @@ export const EmailForm = ({
             <Input
               id="smtpUser"
               placeholder="your@email.com"
-              value={smtpUser}
-              onChange={(e) => setSmtpUser(e.target.value)}
+              {...register("smtpUser")}
             />
           </div>
           <div>
@@ -72,8 +81,7 @@ export const EmailForm = ({
               id="smtpPassword"
               type="password"
               placeholder="••••••••"
-              value={smtpPassword}
-              onChange={(e) => setSmtpPassword(e.target.value)}
+              {...register("smtpPassword")}
             />
           </div>
         </div>
@@ -85,18 +93,22 @@ export const EmailForm = ({
           <Input
             id="from"
             placeholder="sender@example.com"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
+            {...register("from")}
           />
+          {errors.from && (
+            <p className="text-sm text-red-500">{errors.from.message}</p>
+          )}
         </div>
         <div>
           <Label htmlFor="to">To</Label>
           <Input
             id="to"
             placeholder="recipient@example.com"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
+            {...register("to")}
           />
+          {errors.to && (
+            <p className="text-sm text-red-500">{errors.to.message}</p>
+          )}
         </div>
       </div>
 
@@ -105,9 +117,11 @@ export const EmailForm = ({
         <Input
           id="subject"
           placeholder="Email subject"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
+          {...register("subject")}
         />
+        {errors.subject && (
+          <p className="text-sm text-red-500">{errors.subject.message}</p>
+        )}
       </div>
 
       <div>
@@ -115,9 +129,8 @@ export const EmailForm = ({
         <Textarea
           id="body"
           placeholder="Email content..."
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
           rows={6}
+          {...register("body")}
         />
       </div>
 
@@ -126,8 +139,8 @@ export const EmailForm = ({
           Cancel
         </Button>
         <Button
-          onClick={handleSave}
-          disabled={!smtpHost || !from || !to || !subject}
+          onClick={handleSubmit(onSubmit)}
+          disabled={!isValid}
         >
           Save Configuration
         </Button>

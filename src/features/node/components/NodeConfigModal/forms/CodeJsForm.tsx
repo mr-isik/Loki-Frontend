@@ -1,7 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import {
+    CodeJsFormValues,
+    codeJsSchema,
+} from "@/features/node/validation/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { BaseNodeFormProps } from "../BaseNodeForm";
 
 export const CodeJsForm = ({
@@ -9,9 +14,16 @@ export const CodeJsForm = ({
   onSave,
   onCancel,
 }: BaseNodeFormProps) => {
-  const [code, setCode] = useState(
-    nodeData.code ||
-      `// Available variables:
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<CodeJsFormValues>({
+    resolver: zodResolver(codeJsSchema),
+    defaultValues: {
+      code:
+        nodeData.code ||
+        `// Available variables:
 // - input: Data from previous node
 // - context: Workflow context
 
@@ -24,11 +36,12 @@ function execute(input, context) {
   };
 }
 
-return execute(input, context);`
-  );
+return execute(input, context);`,
+    },
+  });
 
-  const handleSave = () => {
-    onSave({ code });
+  const onSubmit = (data: CodeJsFormValues) => {
+    onSave(data);
   };
 
   return (
@@ -38,10 +51,12 @@ return execute(input, context);`
         <Textarea
           id="code"
           className="font-mono text-sm"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
           rows={16}
+          {...register("code")}
         />
+        {errors.code && (
+          <p className="text-sm text-red-500">{errors.code.message}</p>
+        )}
       </div>
 
       <div className="bg-muted/50 p-3 rounded-md space-y-2">
@@ -69,7 +84,9 @@ return execute(input, context);`
         <Button variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button onClick={handleSave}>Save Configuration</Button>
+        <Button onClick={handleSubmit(onSubmit)} disabled={!isValid}>
+          Save Configuration
+        </Button>
       </div>
     </div>
   );

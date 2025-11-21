@@ -2,7 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import {
+    SlackFormValues,
+    slackSchema,
+} from "@/features/node/validation/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { BaseNodeFormProps } from "../BaseNodeForm";
 
 export const SlackForm = ({
@@ -10,20 +15,22 @@ export const SlackForm = ({
   onSave,
   onCancel,
 }: BaseNodeFormProps) => {
-  const [webhookUrl, setWebhookUrl] = useState(nodeData.webhookUrl || "");
-  const [channel, setChannel] = useState(nodeData.channel || "");
-  const [message, setMessage] = useState(nodeData.message || "");
-  const [username, setUsername] = useState(
-    nodeData.username || "Workflow Bot"
-  );
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<SlackFormValues>({
+    resolver: zodResolver(slackSchema),
+    defaultValues: {
+      webhookUrl: nodeData.webhookUrl || "",
+      channel: nodeData.channel || "",
+      username: nodeData.username || "",
+      message: nodeData.message || "",
+    },
+  });
 
-  const handleSave = () => {
-    onSave({
-      webhookUrl,
-      channel,
-      message,
-      username,
-    });
+  const onSubmit = (data: SlackFormValues) => {
+    onSave(data);
   };
 
   return (
@@ -32,11 +39,12 @@ export const SlackForm = ({
         <Label htmlFor="webhookUrl">Webhook URL</Label>
         <Input
           id="webhookUrl"
-          type="password"
           placeholder="https://hooks.slack.com/services/..."
-          value={webhookUrl}
-          onChange={(e) => setWebhookUrl(e.target.value)}
+          {...register("webhookUrl")}
         />
+        {errors.webhookUrl && (
+          <p className="text-sm text-red-500">{errors.webhookUrl.message}</p>
+        )}
         <p className="text-xs text-muted-foreground mt-1">
           Create a webhook in your Slack workspace settings
         </p>
@@ -47,18 +55,16 @@ export const SlackForm = ({
           <Label htmlFor="channel">Channel (Optional)</Label>
           <Input
             id="channel"
-            placeholder="#general or @username"
-            value={channel}
-            onChange={(e) => setChannel(e.target.value)}
+            placeholder="#general"
+            {...register("channel")}
           />
         </div>
         <div>
-          <Label htmlFor="username">Bot Username</Label>
+          <Label htmlFor="username">Username (Optional)</Label>
           <Input
             id="username"
-            placeholder="Workflow Bot"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Bot Name"
+            {...register("username")}
           />
         </div>
       </div>
@@ -67,11 +73,13 @@ export const SlackForm = ({
         <Label htmlFor="message">Message</Label>
         <Textarea
           id="message"
-          placeholder="Your message here..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          rows={6}
+          placeholder="Hello from Loki!"
+          rows={4}
+          {...register("message")}
         />
+        {errors.message && (
+          <p className="text-sm text-red-500">{errors.message.message}</p>
+        )}
         <p className="text-xs text-muted-foreground mt-1">
           Supports Slack markdown formatting
         </p>
@@ -81,7 +89,7 @@ export const SlackForm = ({
         <Button variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button onClick={handleSave} disabled={!webhookUrl || !message}>
+        <Button onClick={handleSubmit(onSubmit)} disabled={!isValid}>
           Save Configuration
         </Button>
       </div>

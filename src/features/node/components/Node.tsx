@@ -136,7 +136,7 @@ const CustomNode = memo(({ data, selected, id }: CustomNodeProps) => {
           nodeId={id}
           nodeName={node.name}
           template={template}
-          nodeData={data}
+          nodeData={node}
           onSave={handleSaveConfig}
         />
       )}

@@ -2,14 +2,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import {
+    ConditionFormValues,
+    conditionSchema,
+} from "@/features/node/validation/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { BaseNodeFormProps } from "../BaseNodeForm";
 
 export const ConditionForm = ({
@@ -17,18 +22,26 @@ export const ConditionForm = ({
   onSave,
   onCancel,
 }: BaseNodeFormProps) => {
-  const [field, setField] = useState(nodeData.field || "");
-  const [operator, setOperator] = useState(nodeData.operator || "equals");
-  const [value, setValue] = useState(nodeData.value || "");
-  const [description, setDescription] = useState(nodeData.description || "");
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isValid },
+  } = useForm<ConditionFormValues>({
+    resolver: zodResolver(conditionSchema),
+    defaultValues: {
+      field: nodeData.field || "",
+      operator: nodeData.operator || "equals",
+      value: nodeData.value || "",
+      description: nodeData.description || "",
+    },
+  });
 
-  const handleSave = () => {
-    onSave({
-      field,
-      operator,
-      value,
-      description,
-    });
+  const operator = watch("operator");
+
+  const onSubmit = (data: ConditionFormValues) => {
+    onSave(data);
   };
 
   return (
@@ -38,17 +51,24 @@ export const ConditionForm = ({
         <Input
           id="field"
           placeholder="e.g., data.status or response.code"
-          value={field}
-          onChange={(e) => setField(e.target.value)}
+          {...register("field")}
         />
         <p className="text-xs text-muted-foreground mt-1">
           Path to the field you want to check
         </p>
+        {errors.field && (
+          <p className="text-sm text-red-500">{errors.field.message}</p>
+        )}
       </div>
 
       <div>
         <Label htmlFor="operator">Operator</Label>
-        <Select value={operator} onValueChange={setOperator}>
+        <Select
+          value={operator}
+          onValueChange={(val) =>
+            setValue("operator", val as ConditionFormValues["operator"])
+          }
+        >
           <SelectTrigger id="operator">
             <SelectValue />
           </SelectTrigger>
@@ -72,8 +92,7 @@ export const ConditionForm = ({
           <Input
             id="value"
             placeholder="Value to compare"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
+            {...register("value")}
           />
         </div>
       )}
@@ -83,9 +102,8 @@ export const ConditionForm = ({
         <Textarea
           id="description"
           placeholder="What does this condition check?"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
           rows={2}
+          {...register("description")}
         />
       </div>
 
@@ -93,7 +111,9 @@ export const ConditionForm = ({
         <Button variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button onClick={handleSave}>Save Configuration</Button>
+        <Button onClick={handleSubmit(onSubmit)} disabled={!isValid}>
+          Save Configuration
+        </Button>
       </div>
     </div>
   );

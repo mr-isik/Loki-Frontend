@@ -32,17 +32,21 @@ export const processInitialEdges = (
 /**
  * Batch node position updates
  */
-export interface NodePositionUpdate {
-  position_x: number;
-  position_y: number;
+/**
+ * Batch node updates
+ */
+export interface NodeUpdate {
+  position_x?: number;
+  position_y?: number;
+  data?: Record<string, any>;
 }
 
 /**
  * Execute batch save with proper error handling
  */
 export const executeBatchSave = async (
-  updates: Map<string, NodePositionUpdate>,
-  updateFn: (nodeId: string, position: NodePositionUpdate) => Promise<any>
+  updates: Map<string, NodeUpdate>,
+  updateFn: (nodeId: string, update: NodeUpdate) => Promise<any>
 ): Promise<void> => {
   if (updates.size === 0) return;
 
@@ -50,7 +54,7 @@ export const executeBatchSave = async (
 
   try {
     await Promise.all(
-      updateArray.map(([nodeId, position]) => updateFn(nodeId, position))
+      updateArray.map(([nodeId, update]) => updateFn(nodeId, update))
     );
     updates.clear();
   } catch (error) {

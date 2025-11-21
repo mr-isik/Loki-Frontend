@@ -40,9 +40,6 @@ interface WorkflowEditorProps {
   onSaveStateChange?: (isSaving: boolean, hasUnsavedChanges: boolean) => void;
 }
 
-/**
- * WorkflowEditor - Clean, SOLID-compliant workflow canvas
- */
 const WorkflowEditor = ({
   workflowId,
   onSaveStateChange,
@@ -57,7 +54,10 @@ const WorkflowEditor = ({
 
   // Track pending changes for batch update
   const pendingNodeUpdates = useRef<
-    Map<string, { position_x: number; position_y: number }>
+    Map<
+      string,
+      { position_x?: number; position_y?: number; data?: Record<string, any> }
+    >
   >(new Map());
 
   // Data fetching
@@ -108,10 +108,10 @@ const WorkflowEditor = ({
   const performBatchSave = useCallback(async () => {
     await executeBatchSave(
       pendingNodeUpdates.current,
-      async (nodeId, position) => {
+      async (nodeId, updates) => {
         return updateNodeAsync({
           nodeId,
-          payload: position,
+          payload: updates,
           workflowId,
         });
       }

@@ -1,7 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import {
+    SetDataFormValues,
+    setDataSchema,
+} from "@/features/node/validation/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { BaseNodeFormProps } from "../BaseNodeForm";
 
 export const SetDataForm = ({
@@ -9,56 +14,47 @@ export const SetDataForm = ({
   onSave,
   onCancel,
 }: BaseNodeFormProps) => {
-  const [data, setData] = useState(
-    JSON.stringify(nodeData.data || {}, null, 2)
-  );
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<SetDataFormValues>({
+    resolver: zodResolver(setDataSchema),
+    defaultValues: {
+      data: nodeData.data || "{}",
+    },
+  });
 
-  const handleSave = () => {
-    try {
-      onSave({
-        data: JSON.parse(data),
-      });
-    } catch {
-      alert("Invalid JSON format");
-    }
+  const onSubmit = (data: SetDataFormValues) => {
+    onSave(data);
   };
 
   return (
     <div className="space-y-4">
       <div>
-        <Label htmlFor="data">Data Object (JSON)</Label>
+        <Label htmlFor="data">JSON Data</Label>
         <Textarea
           id="data"
           className="font-mono text-sm"
-          placeholder={`{
-  "key": "value",
-  "status": "active",
-  "count": 42
-}`}
-          value={data}
-          onChange={(e) => setData(e.target.value)}
-          rows={12}
+          placeholder='{"key": "value"}'
+          rows={10}
+          {...register("data")}
         />
         <p className="text-xs text-muted-foreground mt-1">
-          Define the data you want to set. Use JSON format.
+          Enter a valid JSON object to set as the output of this node.
         </p>
-      </div>
-
-      <div className="bg-muted/50 p-3 rounded-md">
-        <p className="text-sm font-medium mb-1">💡 Tip:</p>
-        <p className="text-xs text-muted-foreground">
-          You can reference previous node data using paths like{" "}
-          <code className="bg-background px-1 rounded">
-            {"{{previousNode.output}}"}
-          </code>
-        </p>
+        {errors.data && (
+          <p className="text-sm text-red-500">{errors.data.message}</p>
+        )}
       </div>
 
       <div className="flex justify-end gap-2 pt-4">
         <Button variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button onClick={handleSave}>Save Configuration</Button>
+        <Button onClick={handleSubmit(onSubmit)} disabled={!isValid}>
+          Save Configuration
+        </Button>
       </div>
     </div>
   );

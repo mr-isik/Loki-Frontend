@@ -2,13 +2,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import {
+    LoopFormValues,
+    loopSchema,
+} from "@/features/node/validation/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { BaseNodeFormProps } from "../BaseNodeForm";
 
 export const LoopForm = ({
@@ -16,33 +21,39 @@ export const LoopForm = ({
   onSave,
   onCancel,
 }: BaseNodeFormProps) => {
-  const [dataSource, setDataSource] = useState(nodeData.dataSource || "");
-  const [loopType, setLoopType] = useState(nodeData.loopType || "array");
-  const [itemVariable, setItemVariable] = useState(
-    nodeData.itemVariable || "item"
-  );
-  const [indexVariable, setIndexVariable] = useState(
-    nodeData.indexVariable || "index"
-  );
-  const [maxIterations, setMaxIterations] = useState(
-    nodeData.maxIterations || ""
-  );
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isValid },
+  } = useForm<LoopFormValues>({
+    resolver: zodResolver(loopSchema),
+    defaultValues: {
+      dataSource: nodeData.dataSource || "",
+      loopType: nodeData.loopType || "array",
+      itemVariable: nodeData.itemVariable || "item",
+      indexVariable: nodeData.indexVariable || "index",
+      maxIterations: nodeData.maxIterations,
+    },
+  });
 
-  const handleSave = () => {
-    onSave({
-      dataSource,
-      loopType,
-      itemVariable,
-      indexVariable,
-      maxIterations: maxIterations ? parseInt(maxIterations) : undefined,
-    });
+  const loopType = watch("loopType");
+
+  const onSubmit = (data: LoopFormValues) => {
+    onSave(data);
   };
 
   return (
     <div className="space-y-4">
       <div>
         <Label htmlFor="loopType">Loop Type</Label>
-        <Select value={loopType} onValueChange={setLoopType}>
+        <Select
+          value={loopType}
+          onValueChange={(val) =>
+            setValue("loopType", val as LoopFormValues["loopType"])
+          }
+        >
           <SelectTrigger id="loopType">
             <SelectValue />
           </SelectTrigger>
@@ -59,12 +70,14 @@ export const LoopForm = ({
         <Input
           id="dataSource"
           placeholder="e.g., data.items or response.users"
-          value={dataSource}
-          onChange={(e) => setDataSource(e.target.value)}
+          {...register("dataSource")}
         />
         <p className="text-xs text-muted-foreground mt-1">
           Path to the data you want to loop over
         </p>
+        {errors.dataSource && (
+          <p className="text-sm text-red-500">{errors.dataSource.message}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -73,8 +86,7 @@ export const LoopForm = ({
           <Input
             id="itemVariable"
             placeholder="item"
-            value={itemVariable}
-            onChange={(e) => setItemVariable(e.target.value)}
+            {...register("itemVariable")}
           />
         </div>
         <div>
@@ -82,8 +94,7 @@ export const LoopForm = ({
           <Input
             id="indexVariable"
             placeholder="index"
-            value={indexVariable}
-            onChange={(e) => setIndexVariable(e.target.value)}
+            {...register("indexVariable")}
           />
         </div>
       </div>
@@ -94,8 +105,7 @@ export const LoopForm = ({
           id="maxIterations"
           type="number"
           placeholder="Leave empty for unlimited"
-          value={maxIterations}
-          onChange={(e) => setMaxIterations(e.target.value)}
+          {...register("maxIterations", { valueAsNumber: true })}
         />
         <p className="text-xs text-muted-foreground mt-1">
           Safety limit to prevent infinite loops
@@ -106,7 +116,9 @@ export const LoopForm = ({
         <Button variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button onClick={handleSave}>Save Configuration</Button>
+        <Button onClick={handleSubmit(onSubmit)} disabled={!isValid}>
+          Save Configuration
+        </Button>
       </div>
     </div>
   );

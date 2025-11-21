@@ -4,19 +4,19 @@
  */
 
 import {
-  useCreateWorkflowNode,
-  useDeleteWorkflowNode,
+    useCreateWorkflowNode,
+    useDeleteWorkflowNode,
 } from "@/features/node/hooks/useQueries";
 import { NodeTemplateResponse } from "@/features/node/validation";
 import { NodeChange, Node as ReactFlowNode } from "@xyflow/react";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import {
-  calculateCenterPosition,
-  createNodeDataFromTemplate,
-  createOptimisticNode,
-  generateTempNodeId,
-  updateNodeWithRealId,
+    calculateCenterPosition,
+    createNodeDataFromTemplate,
+    createOptimisticNode,
+    generateTempNodeId,
+    updateNodeWithRealId,
 } from "../utils/nodeHelpers";
 
 interface UseWorkflowNodesParams {
@@ -32,7 +32,10 @@ interface UseWorkflowNodesParams {
     nodes: ReactFlowNode[]
   ) => ReactFlowNode[];
   pendingNodeUpdates: React.MutableRefObject<
-    Map<string, { position_x: number; position_y: number }>
+    Map<
+      string,
+      { position_x?: number; position_y?: number; data?: Record<string, any> }
+    >
   >;
   triggerAutoSave: () => void;
 }
@@ -60,7 +63,9 @@ export const useWorkflowNodeHandlers = ({
       changes.forEach((change) => {
         if (change.type === "position" && change.position && !change.dragging) {
           // Add to pending updates (will be saved via auto-save)
+          const currentUpdate = pendingNodeUpdates.current.get(change.id) || {};
           pendingNodeUpdates.current.set(change.id, {
+            ...currentUpdate,
             position_x: change.position.x,
             position_y: change.position.y,
           });
@@ -160,8 +165,11 @@ export const useWorkflowNodeHandlers = ({
       );
 
       // Add to pending updates for auto-save
-      // Note: Auto-save currently only handles position updates
-      // TODO: Extend auto-save to handle data updates
+      const currentUpdate = pendingNodeUpdates.current.get(nodeId) || {};
+      pendingNodeUpdates.current.set(nodeId, {
+        ...currentUpdate,
+        data: newData,
+      });
       triggerAutoSave();
     },
     [setLocalNodes, triggerAutoSave]

@@ -1,14 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
+import {
+    MergeFormValues,
+    mergeSchema,
+} from "@/features/node/validation/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { BaseNodeFormProps } from "../BaseNodeForm";
 
 export const MergeForm = ({
@@ -16,21 +21,36 @@ export const MergeForm = ({
   onSave,
   onCancel,
 }: BaseNodeFormProps) => {
-  const [mergeMode, setMergeMode] = useState(nodeData.mergeMode || "wait_all");
-  const [description, setDescription] = useState(nodeData.description || "");
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { isValid },
+  } = useForm<MergeFormValues>({
+    resolver: zodResolver(mergeSchema),
+    defaultValues: {
+      mergeMode: nodeData.mergeMode || "wait_all",
+      description: nodeData.description || "",
+    },
+  });
 
-  const handleSave = () => {
-    onSave({
-      mergeMode,
-      description,
-    });
+  const mergeMode = watch("mergeMode");
+
+  const onSubmit = (data: MergeFormValues) => {
+    onSave(data);
   };
 
   return (
     <div className="space-y-4">
       <div>
         <Label htmlFor="mergeMode">Merge Mode</Label>
-        <Select value={mergeMode} onValueChange={setMergeMode}>
+        <Select
+          value={mergeMode}
+          onValueChange={(val) =>
+            setValue("mergeMode", val as MergeFormValues["mergeMode"])
+          }
+        >
           <SelectTrigger id="mergeMode">
             <SelectValue />
           </SelectTrigger>
@@ -55,9 +75,8 @@ export const MergeForm = ({
         <Textarea
           id="description"
           placeholder="What are you merging?"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
           rows={2}
+          {...register("description")}
         />
       </div>
 
@@ -72,7 +91,9 @@ export const MergeForm = ({
         <Button variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button onClick={handleSave}>Save Configuration</Button>
+        <Button onClick={handleSubmit(onSubmit)} disabled={!isValid}>
+          Save Configuration
+        </Button>
       </div>
     </div>
   );
