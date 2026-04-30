@@ -13,7 +13,7 @@ export const workspaceAPI = {
     const { data, error, success } = await apiClient.get(
       `/workspaces/my`,
       { page, page_size: pageSize },
-      PaginatedResponseSchema(WorkspaceResponseSchema)
+      PaginatedResponseSchema(WorkspaceResponseSchema),
     );
 
     return { data, error, success };
@@ -22,7 +22,7 @@ export const workspaceAPI = {
   async GetWorkspaceById(workspaceId: string) {
     const { data, error, success } = await apiClient.get(
       `/workspaces/${workspaceId}`,
-      {}
+      {},
     );
 
     return { data, error, success };
@@ -31,7 +31,7 @@ export const workspaceAPI = {
   async UpdateWorkspace(workspaceId: string, request: { name?: string }) {
     const { error, success } = await apiClient.put(
       `/workspaces/${workspaceId}`,
-      request
+      request,
     );
 
     return { error, success };
@@ -39,7 +39,7 @@ export const workspaceAPI = {
 
   async DeleteWorkspace(workspaceId: string) {
     const { error, success } = await apiClient.delete(
-      `/workspaces/${workspaceId}`
+      `/workspaces/${workspaceId}`,
     );
 
     return { error, success };

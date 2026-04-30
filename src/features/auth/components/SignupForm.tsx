@@ -119,6 +119,15 @@ export function SignupForm({
                 type="password"
               />
 
+              <DynamicFormField
+                control={form.control}
+                disabled={isLoading}
+                name="agreeToTerms"
+                type="checkbox"
+                checkboxLabel="Kullanım koşullarını kabul ediyorum"
+                showLabel={false}
+              />
+
               <Button className="w-full" disabled={isLoading} type="submit">
                 {isLoading ? <Spinner /> : "Create Account"}
                 {!isLoading && <ArrowRight />}

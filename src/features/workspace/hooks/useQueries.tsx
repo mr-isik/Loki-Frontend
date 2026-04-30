@@ -28,7 +28,7 @@ export const useWorkspaces = (page: number = 1, pageSize: number = 100) => {
     queryFn: async () => {
       const { data, success, error } = await workspaceAPI.GetMyWorkSpaces(
         page,
-        pageSize
+        pageSize,
       );
       if (!success || !data) {
         throw new Error(error?.message || "Failed to fetch workspaces");
@@ -36,7 +36,7 @@ export const useWorkspaces = (page: number = 1, pageSize: number = 100) => {
       // Extract workspaces array from paginated response
       return data.data;
     },
-    staleTime: Infinity,  
+    staleTime: Infinity,
   });
 };
 
@@ -46,14 +46,14 @@ export const useWorkspaces = (page: number = 1, pageSize: number = 100) => {
  */
 export const useWorkspacesPaginated = (
   page: number = 1,
-  pageSize: number = 10
+  pageSize: number = 10,
 ) => {
   return useQuery({
     queryKey: [...workspaceKeys.all, "paginated", page, pageSize],
     queryFn: async () => {
       const { data, success, error } = await workspaceAPI.GetMyWorkSpaces(
         page,
-        pageSize
+        pageSize,
       );
       if (!success || !data) {
         throw new Error(error?.message || "Failed to fetch workspaces");
@@ -75,7 +75,7 @@ export const useWorkspacesInfinite = (pageSize: number = 10) => {
     queryFn: async ({ pageParam = 1 }) => {
       const { data, success, error } = await workspaceAPI.GetMyWorkSpaces(
         pageParam,
-        pageSize
+        pageSize,
       );
       if (!success || !data) {
         throw new Error(error?.message || "Failed to fetch workspaces");
@@ -100,9 +100,8 @@ export const useWorkspace = (workspaceId: string) => {
   return useQuery({
     queryKey: workspaceKeys.detail(workspaceId),
     queryFn: async () => {
-      const { data, success, error } = await workspaceAPI.GetWorkspaceById(
-        workspaceId
-      );
+      const { data, success, error } =
+        await workspaceAPI.GetWorkspaceById(workspaceId);
       if (!success || !data) {
         throw new Error(error?.message || "Failed to fetch workspace");
       }

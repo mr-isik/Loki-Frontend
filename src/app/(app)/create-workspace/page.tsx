@@ -20,13 +20,13 @@ import { toast } from "sonner";
 
 export default function CreateWorkspacePage() {
   const router = useRouter();
-  const { mutate: createWorkspace, isPending } = useCreateWorkspace();
+  const { mutate: createWorkspace, isPending, data } = useCreateWorkspace();
 
   const handleSubmit = (data: CreateWorkspaceFormData) => {
     createWorkspace(data, {
       onSuccess: () => {
         toast.success("Workspace created successfully");
-        router.push("/");
+        router.push("/workspace/");
       },
       onError: (error) => {
         toast.error(error.message || "Failed to create workspace");
