@@ -78,6 +78,15 @@ export const resetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
+export const meResponseSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  email: z.string(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export type MeResponse = z.infer<typeof meResponseSchema>;
 export type LoginFormData = z.infer<typeof loginSchema>;
 export type SignupFormData = z.infer<typeof signupSchema>;
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;

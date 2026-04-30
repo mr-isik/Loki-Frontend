@@ -72,7 +72,7 @@ export const nodeAPI = {
     edgeId: string,
     payload: UpdateWorkflowEdgeRequest
   ) => {
-    const { data, error } = await apiClient.patch(
+    const { data, error } = await apiClient.put(
       `/workflow-edges/${edgeId}`,
       payload,
       {

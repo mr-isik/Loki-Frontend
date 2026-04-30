@@ -66,4 +66,11 @@ export const workflowAPI = {
     );
     return { error, success };
   },
+
+  async RunWorkflow(workflowId: string) {
+    const { data, error, success } = await apiClient.post(
+      `/workflows/${workflowId}/run`
+    );
+    return { data, error, success };
+  },
 };

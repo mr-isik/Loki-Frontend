@@ -16,14 +16,16 @@ import {
   useUpdateWorkflow,
   useWorkflow,
 } from "@/features/workflow/hooks/useQueries";
+import { useRunWorkflow } from "@/features/workflow-runs/hooks/useQueries";
 import { WorkflowStatus } from "@/types/workflow.types";
 import { ReactFlowProvider } from "@xyflow/react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function WorkflowPage() {
   const params = useParams();
+  const router = useRouter();
   const workspaceId = params.workspaceId as string;
   const workflowId = params.workflowId as string;
   const { data: workflow, isLoading } = useWorkflow(workflowId);
@@ -31,6 +33,7 @@ export default function WorkflowPage() {
   const { mutate: updateWorkflow } = useUpdateWorkflow();
   const { mutate: publishWorkflow } = usePublishWorkflow();
   const { mutate: archiveWorkflow } = useArchiveWorkflow();
+  const { mutate: runWorkflow, isPending: isRunning } = useRunWorkflow();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -82,8 +85,14 @@ export default function WorkflowPage() {
   };
 
   const handleRun = () => {
-    // TODO: Implement run workflow
-    toast.info("Run workflow - Coming soon");
+    runWorkflow(workflowId, {
+      onSuccess: () => {
+        toast.success("Workflow started successfully");
+      },
+      onError: (error) => {
+        toast.error(error.message || "Failed to run workflow");
+      },
+    });
   };
 
   const handleSettings = () => {

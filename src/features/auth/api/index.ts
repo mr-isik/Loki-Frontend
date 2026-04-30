@@ -5,6 +5,7 @@ import {
   LoginFormData,
   loginResponseSchema,
   loginSchema,
+  meResponseSchema,
   refreshTokenResponseSchema,
   SignupFormData,
   verifyOauthResponseSchema,
@@ -14,6 +15,16 @@ const AUTH_PATH = "/auth";
 const USERS_PATH = "/users";
 
 export const AuthAPI = {
+  async getMe() {
+    const { data, error, success } = await apiClient.get(
+      `${AUTH_PATH}/me`,
+      {},
+      meResponseSchema
+    );
+
+    return { data, error, success };
+  },
+
   async login(request: LoginFormData) {
     const { data, error, success } = await apiClient.post(
       `${AUTH_PATH}/login`,
