@@ -6,6 +6,7 @@ import { Handle, Position } from "@xyflow/react";
 import { createElement, memo, useMemo, useState } from "react";
 import { getNodeColor, getNodeIcon } from "../utils/nodeStyles";
 import { NodeConfigModal } from "./NodeConfigModal";
+import { cn } from "@/lib/utils";
 
 interface CustomNodeProps {
   data: {
@@ -45,7 +46,7 @@ const CustomNode = memo(({ data, selected, id }: CustomNodeProps) => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative group">
       {/* Input Handles */}
       {inputs.length > 0 &&
         inputs.map((input, index) => (
@@ -54,41 +55,51 @@ const CustomNode = memo(({ data, selected, id }: CustomNodeProps) => {
             type="target"
             position={Position.Left}
             id={input.id}
+            className="!w-3 !h-3 !border-2 !border-background !bg-zinc-500 hover:!bg-zinc-300 transition-colors"
             style={{
-              width: 12,
-              height: 12,
-              backgroundColor: "#6B7280",
-              border: "2px solid white",
               top: `${inputSpacing * (index + 1)}%`,
             }}
             title={input.label}
           />
         ))}
 
-      {/* n8n Minimal Style Node */}
+      {/* Premium Canvas Node */}
       <div
         onDoubleClick={handleDoubleClick}
-        className={`
-          bg-white dark:bg-gray-900 w-16 h-16 flex items-center justify-center
-          border-2
-          border-b-4
-          rounded-lg
-          transition-all duration-200
-          cursor-pointer
-          ${selected ? "ring-2 ring-offset-2 ring-primary" : ""}
-        `}
+        className={cn(
+          "w-16 h-16 rounded-xl flex items-center justify-center transition-all duration-300",
+          "bg-card/80 backdrop-blur-md border",
+          selected 
+            ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105" 
+            : "border-border group-hover:border-muted-foreground/30 shadow-xl",
+          "cursor-pointer"
+        )}
+        style={{
+          boxShadow: selected ? `0 0 20px -5px ${colors.main}66` : undefined,
+          borderColor: selected ? colors.main : undefined
+        }}
       >
-        {/* Header - Minimal */}
-        <div className="px-3 py-2 flex items-center gap-2.5">
-          {/* Icon Circle */}
-          <div
-            className={`w-7! h-7! rounded-full ${colors.iconBg} flex items-center justify-center shrink-0`}
-          >
-            {createElement(IconComponent, {
-              className: `w-4 h-4 ${colors.icon}`,
-            })}
-          </div>
+        <div 
+          className={cn(
+            "w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300",
+            "border border-border/50 bg-muted/30"
+          )}
+          style={{
+            color: colors.main
+          }}
+        >
+          {createElement(IconComponent, {
+            className: "w-5 h-5",
+          })}
         </div>
+        
+        {/* Connection status indicator (glow) */}
+        {selected && (
+          <div 
+            className="absolute -inset-0.5 rounded-xl blur-sm -z-10 animate-pulse"
+            style={{ backgroundColor: `${colors.main}33` }}
+          />
+        )}
       </div>
 
       {/* Output Handles */}
@@ -99,11 +110,8 @@ const CustomNode = memo(({ data, selected, id }: CustomNodeProps) => {
             type="source"
             position={Position.Right}
             id={output.id}
+            className="!w-3 !h-3 !border-2 !border-background !bg-muted-foreground/50 hover:!bg-primary transition-colors"
             style={{
-              width: 12,
-              height: 12,
-              backgroundColor: "#6B7280",
-              border: "2px solid white",
               top: `${outputSpacing * (index + 1)}%`,
             }}
             title={output.label}
@@ -114,18 +122,18 @@ const CustomNode = memo(({ data, selected, id }: CustomNodeProps) => {
           type="source"
           position={Position.Right}
           id="source"
-          style={{
-            width: 12,
-            height: 12,
-            backgroundColor: "#6B7280",
-            border: "2px solid white",
-          }}
+          className="!w-3 !h-3 !border-2 !border-background !bg-muted-foreground/50 hover:!bg-primary transition-colors"
         />
       )}
 
-      {/* Node Content */}
-      <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 w-max max-w-xs text-center">
-        <h4 className="text-sm font-medium">{node.name}</h4>
+      {/* Node Content Label */}
+      <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max max-w-[120px] text-center">
+        <h4 className={cn(
+          "text-[11px] font-semibold tracking-wide uppercase transition-colors duration-300",
+          selected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+        )}>
+          {node.name}
+        </h4>
       </div>
 
       {/* Configuration Modal */}

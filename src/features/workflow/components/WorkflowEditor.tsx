@@ -24,6 +24,7 @@ import {
   applyEdgeChanges,
   applyNodeChanges,
   Background,
+  BackgroundVariant,
   Controls,
   MiniMap,
   ReactFlow,
@@ -186,14 +187,20 @@ const WorkflowEditor = ({
         edgesFocusable
         deleteKeyCode="Delete"
         defaultEdgeOptions={{
-          type: "default",
+          type: "smoothstep",
           animated: true,
-          style: { strokeWidth: 3, stroke: "#644a40" },
+          style: { strokeWidth: 2.5, stroke: "var(--primary)" },
         }}
       >
         <Controls />
-        <MiniMap nodeStrokeWidth={3} zoomable pannable />
-        <Background gap={30} size={2} />
+        <MiniMap 
+          nodeStrokeWidth={3} 
+          zoomable 
+          pannable 
+          maskColor="var(--background)"
+          className="!bg-background !border-border opacity-50"
+        />
+        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--muted-foreground)" />
       </ReactFlow>
 
       {/* Add Node Button */}

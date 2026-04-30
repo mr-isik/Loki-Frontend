@@ -15,7 +15,7 @@ export const apiEdgeToReactFlowEdge = (apiEdge: any): ReactFlowEdge => {
     target: apiEdge.target_node_id,
     sourceHandle: apiEdge.source_handle || undefined,
     targetHandle: apiEdge.target_handle || undefined,
-    type: "default",
+    type: "smoothstep",
     animated: true,
   };
 };
